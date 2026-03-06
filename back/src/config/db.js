@@ -10,7 +10,6 @@ const pool = mysql.createPool({
   connectionLimit: 10
 });
 
-// Probar conexión al iniciar
 pool.getConnection()
   .then(() => console.log('✅ Conectado a MySQL'))
   .catch(err => console.error('❌ Error MySQL:', err.message));
