@@ -7,7 +7,7 @@ require('dotenv').config();
 
 // ─── REGISTRO ───────────────────────────────────────
 const registro = async (req, res) => {
-  const { nombre, email, contrasena } = req.body;
+  const { nombre, email, contrasena, id_rol } = req.body;
 
   if (!nombre || !email || !contrasena) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
@@ -26,9 +26,19 @@ const registro = async (req, res) => {
     const hash = await bcrypt.hash(contrasena, 10);
 
     // Guardar usuario
+    // Si no se envía id_rol, por defecto es 2 (cliente)
+    const rolFinal = parseInt(id_rol) || 2;
+
+    // RESTRICCIÓN: Solo el correo fijo puede ser Admin
+    if (rolFinal === 1 && email !== process.env.ADMIN_EMAIL) {
+      return res.status(403).json({
+        error: 'No tienes permiso para registrarte como Administrador ✋'
+      });
+    }
+
     await db.query(
-      'INSERT INTO usuarios (nombre, email, contrasena) VALUES (?, ?, ?)',
-      [nombre, email, hash]
+      'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
+      [nombre, email, hash, rolFinal]
     );
 
     res.status(201).json({ message: '¡Usuario registrado exitosamente! 🎉' });
@@ -102,8 +112,8 @@ const forgotPassword = async (req, res) => {
 
     // Siempre responde igual por seguridad
     if (rows.length === 0) {
-      return res.json({ 
-        message: 'Si el correo existe, recibirás instrucciones.' 
+      return res.json({
+        message: 'Si el correo existe, recibirás instrucciones.'
       });
     }
 
@@ -129,7 +139,7 @@ const forgotPassword = async (req, res) => {
       html: `
         <div style="font-family:Arial; max-width:500px; margin:auto; 
                     background:#a6d4f2; padding:30px; border-radius:16px;">
-          <h2 style="color:#e30020; text-align:center;">¡Hola ${usuario.nombre}! 🎮</h2>
+          <h2 style="color:#e30020; text-align:center;">¡Hola ${usuario.nombre}! ❤️💋</h2>
           <p style="color:#333;">
             Recibimos una solicitud para restablecer tu contraseña en 
             <strong>Toy Store</strong>.
@@ -183,8 +193,8 @@ const resetPassword = async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(400).json({ 
-        error: 'El enlace es inválido o ya expiró. Solicita uno nuevo.' 
+      return res.status(400).json({
+        error: 'El enlace es inválido o ya expiró. Solicita uno nuevo.'
       });
     }
 

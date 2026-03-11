@@ -1,3 +1,62 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .toy-story-bg {
+    background-color: #87CEEB; /* SkyBlue */
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cloud-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .cloud {
+    position: absolute;
+    background: white;
+    border-radius: 100px;
+    width: 150px;
+    height: 50px;
+  }
+
+  .cloud::after,
+  .cloud::before {
+    content: "";
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+
+  .cloud::after {
+    width: 70px;
+    height: 70px;
+    top: -35px;
+    left: 20px;
+  }
+
+  .cloud::before {
+    width: 90px;
+    height: 90px;
+    top: -50px;
+    right: 20px;
+  }
+  
+  /* Animación suave para las nubes */
+  @keyframes float {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(20px); }
+    100% { transform: translateX(0); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+}

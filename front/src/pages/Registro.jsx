@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import FondoToyStory from "../components/FondoToyStory";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ export default function Registro() {
     email: "",
     contrasena: "",
     confirmar: "",
+    id_rol: "2", // Valor por defecto: Cliente
   });
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -37,6 +39,7 @@ export default function Registro() {
           nombre: form.nombre,
           email: form.email,
           contrasena: form.contrasena,
+          id_rol: parseInt(form.id_rol),
         }),
       });
 
@@ -55,8 +58,8 @@ export default function Registro() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-200 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <FondoToyStory>
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full">
 
         <div className="text-center mb-6">
           <h1 className="text-4xl font-black text-yellow-400
@@ -129,9 +132,23 @@ export default function Registro() {
             value={form.confirmar}
             onChange={handleChange}
             required
-            className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-6
+            className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
                        focus:outline-none focus:border-yellow-400 transition"
           />
+
+          <label className="text-sm font-semibold text-gray-600">
+            ¿Quién eres?
+          </label>
+          <select
+            name="id_rol"
+            value={form.id_rol}
+            onChange={handleChange}
+            className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-6
+                       focus:outline-none focus:border-yellow-400 transition bg-white"
+          >
+            <option value="2">Soy un Cliente 🧸</option>
+            <option value="1">Soy un Administrador 🔑</option>
+          </select>
 
           <button
             type="submit"
@@ -151,6 +168,6 @@ export default function Registro() {
         </p>
 
       </div>
-    </div>
+    </FondoToyStory>
   );
-}
+}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import FondoToyStory from "../components/FondoToyStory";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -41,8 +42,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-sky-200 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <FondoToyStory>
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full">
 
         {/* Logo */}
         <div className="text-center mb-6">
@@ -123,6 +124,6 @@ export default function Login() {
         </p>
 
       </div>
-    </div>
+    </FondoToyStory>
   );
-}
+}

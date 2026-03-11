@@ -45,7 +45,7 @@ export default function Inicio() {
             Donde tus juguetes sí cobran vida 🌟
           </p>
 
-          {/* Tarjetas de secciones */}
+          {/* Tarjetas de secciones (Contenido para todos) */}
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div className="bg-sky-100 p-4 rounded-xl cursor-pointer 
                             hover:bg-sky-200 transition">
@@ -57,17 +57,33 @@ export default function Inicio() {
               <p className="text-2xl">📖</p>
               <p className="font-bold text-gray-700 mt-1">Guía</p>
             </div>
-            <div className="bg-red-100 p-4 rounded-xl cursor-pointer 
-                            hover:bg-red-200 transition">
-              <p className="text-2xl">💖</p>
-              <p className="font-bold text-gray-700 mt-1">Wishlist</p>
-            </div>
-            <div className="bg-purple-100 p-4 rounded-xl cursor-pointer 
-                            hover:bg-purple-200 transition">
-              <p className="text-2xl">🔍</p>
-              <p className="font-bold text-gray-700 mt-1">Explora</p>
-            </div>
           </div>
+
+          {/* Dashboard de Administrador (Solo visible para rol 1) */}
+          {usuario?.rol === 1 && (
+            <div className="mt-8 pt-8 border-t-2 border-dashed border-red-200 w-full">
+              <h3 className="text-xl font-bold text-red-600 mb-4 flex items-center justify-center gap-2">
+                🔑 Panel de Administrador
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-red-500 text-white p-4 rounded-xl cursor-pointer 
+                                hover:bg-red-600 transition shadow-md">
+                  <p className="text-2xl">📦</p>
+                  <p className="font-bold mt-1">Gestionar Juguetes</p>
+                </div>
+                <div className="bg-red-700 text-white p-4 rounded-xl cursor-pointer 
+                                hover:bg-red-800 transition shadow-md">
+                  <p className="text-2xl">👥</p>
+                  <p className="font-bold mt-1">Ver Usuarios</p>
+                </div>
+                <div className="bg-gray-800 text-white p-4 rounded-xl cursor-pointer 
+                                hover:bg-black transition shadow-md col-span-2">
+                  <p className="text-2xl">📊</p>
+                  <p className="font-bold mt-1">Reportes de Ventas</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
