@@ -219,4 +219,139 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registro, login, forgotPassword, resetPassword };
+// ─── GOOGLE MOCK ────────────────────────────────────
+const googleMock = async (req, res) => {
+  const { email, nombre } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email es obligatorio' });
+  }
+
+  try {
+    // Buscar si el usuario ya existe
+    let [rows] = await db.query(
+      'SELECT * FROM usuarios WHERE email = ?', [email]
+    );
+
+    let usuario;
+
+    if (rows.length === 0) {
+      // Si no existe, lo creamos (rol cliente)
+      const mockPass = await bcrypt.hash('google_mock_pass_123', 10);
+      const [result] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
+        [nombre || 'Usuario Google', email, mockPass, 2]
+      );
+      
+      const [newRows] = await db.query(
+        'SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]
+      );
+      usuario = newRows[0];
+    } else {
+      usuario = rows[0];
+    }
+
+    // Generar token JWT
+    const token = jwt.sign(
+      { id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    res.json({
+      message: '¡Bienvenidx con Google! 🧸',
+      token,
+      usuario: {
+        id: usuario.id_usuario,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.id_rol
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error interno del servidor en Google Mock' });
+  }
+};
+
+// Almacén temporal de códigos (en producción usar Redis o DB)
+const googleCodes = new Map();
+
+// ─── SEND GOOGLE VERIFICATION ───────────────────────
+const sendGoogleVerification = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email requerido' });
+
+  try {
+    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+    googleCodes.set(email, { codigo, expiry: Date.now() + 600000 }); // 10 min
+
+    await transporter.sendMail({
+      from: `"Google Accounts 🛡️" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `${codigo} es tu código de verificación de Google`,
+      html: `
+        <div style="font-family: 'Roboto',Arial,sans-serif; border:1px solid #e0e0e0; padding:40px; max-width:500px; margin:auto; border-radius:8px;">
+          <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="75" style="margin-bottom:20px;">
+          <h2 style="font-size:24px; color:#202124; font-weight:400;">Verifica tu correo electrónico</h2>
+          <p style="font-size:14px; color:#3c4043;">Usa este código para completar el registro en Toy Store a través de Google:</p>
+          <div style="background:#f1f3f4; padding:20px; text-align:center; font-size:36px; font-weight:500; letter-spacing:8px; margin:20px 0; border-radius:4px; color:#1a73e8;">
+            ${codigo}
+          </div>
+          <p style="font-size:12px; color:#70757a;">Si no solicitaste este código, puedes ignorar este mensaje.</p>
+        </div>
+      `
+    });
+    res.json({ message: 'Código enviado' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al enviar email' });
+  }
+};
+
+// ─── VERIFY GOOGLE MOCK ──────────────────────────────
+const verifyGoogleMock = async (req, res) => {
+  const { email, nombre, codigo } = req.body;
+  const stored = googleCodes.get(email);
+
+  if (!stored || stored.codigo !== codigo || stored.expiry < Date.now()) {
+    return res.status(400).json({ error: 'Código inválido o expirado' });
+  }
+
+  try {
+    // Buscar si existe o crear
+    let [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+    let usuario;
+
+    if (rows.length === 0) {
+      const hash = await bcrypt.hash('google_mock_pass_' + Date.now(), 10);
+      const nombreFinal = nombre || email.split('@')[0]; // Usar parte del email si no hay nombre
+      const [result] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, 2)',
+        [nombreFinal, email, hash]
+      );
+      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]);
+      usuario = newRows[0];
+    } else {
+      usuario = rows[0];
+    }
+
+    googleCodes.delete(email);
+
+    const token = jwt.sign(
+      { id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    res.json({
+      token,
+      usuario: { id: usuario.id_usuario, nombre: usuario.nombre, email: usuario.email, rol: usuario.id_rol }
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error en registro' });
+  }
+};
+
+module.exports = { registro, login, forgotPassword, resetPassword, googleMock, sendGoogleVerification, verifyGoogleMock };

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FondoToyStory from "../components/FondoToyStory";
+import ToyStoreLogo from "../components/ToyStoreLogo";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,6 +16,18 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // Validación personalizada
+    if (!form.email) {
+      return setError("Por favor, ingresa tu correo electrónico");
+    }
+    if (!/\S+@\S+\.\S+/.test(form.email)) {
+      return setError("El formato del correo no es válido");
+    }
+    if (!form.contrasena) {
+      return setError("La contraseña es obligatoria");
+    }
+
     setCargando(true);
 
     try {
@@ -43,40 +56,31 @@ export default function Login() {
 
   return (
     <FondoToyStory>
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
 
-        {/* Logo */}
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-black text-yellow-400 
-                         drop-shadow-[2px_2px_0px_#1d4ed8]">
-            TOY STORE
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Donde tus juguetes sí cobran vida 🌟
-          </p>
-        </div>
+        {/* Logo de Toy Story */}
+        <ToyStoreLogo />
 
-        <h2 className="text-xl font-bold text-gray-700 mb-6">
+        <h2 className="text-xl font-bold text-gray-700 mb-6 border-b border-gray-100 pb-2">
           Iniciar sesión
         </h2>
 
         {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded-xl mb-4 text-sm">
-            ⚠️ {error}
+          <div className="bg-red-100 text-red-600 p-3 rounded-xl mb-4 text-sm border border-red-200 animate-pulse">
+            {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <label className="text-sm font-semibold text-gray-600">
             Correo electrónico
           </label>
           <input
             type="email"
             name="email"
-            placeholder="tu@correo.com"
+            placeholder="usuario@ejemplo.com"
             value={form.email}
             onChange={handleChange}
-            required
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
                        focus:outline-none focus:border-yellow-400 transition"
           />
@@ -90,7 +94,6 @@ export default function Login() {
             placeholder="••••••••"
             value={form.contrasena}
             onChange={handleChange}
-            required
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-2
                        focus:outline-none focus:border-yellow-400 transition"
           />
@@ -109,9 +112,24 @@ export default function Login() {
             type="submit"
             disabled={cargando}
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800
-                       font-bold py-3 rounded-xl transition text-lg"
+                       font-bold py-3 rounded-xl transition text-lg mb-4 shadow-md"
           >
-            {cargando ? "Entrando..." : "Entrar 🚀"}
+            {cargando ? "Entrando..." : "Entrar"}
+          </button>
+
+          {/* Google Button Simulator */}
+          <button
+            type="button"
+            className="w-full bg-white border-2 border-gray-200 hover:bg-gray-50 text-gray-600
+                       font-semibold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-sm"
+            onClick={() => navigate("/google-auth-mock")}
+          >
+            <img 
+              src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" 
+              alt="Google" 
+              className="w-5 h-5"
+            />
+            Continue with Google
           </button>
         </form>
 

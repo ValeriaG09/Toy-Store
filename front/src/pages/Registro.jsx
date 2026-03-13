@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FondoToyStory from "../components/FondoToyStory";
+import ToyStoreLogo from "../components/ToyStoreLogo";
 
 export default function Registro() {
   const navigate = useNavigate();
@@ -22,11 +23,21 @@ export default function Registro() {
     e.preventDefault();
     setError("");
 
-    if (form.contrasena !== form.confirmar) {
-      return setError("Las contraseñas no coinciden 😬");
+    // Validación personalizada
+    if (!form.nombre.trim()) {
+      return setError("Por favor, dinos tu nombre");
+    }
+    if (!form.email) {
+      return setError("El correo electrónico es obligatorio");
+    }
+    if (!/\S+@\S+\.\S+/.test(form.email)) {
+      return setError("El formato del correo no es válido");
     }
     if (form.contrasena.length < 8) {
-      return setError("La contraseña debe tener mínimo 8 caracteres");
+      return setError("La contraseña debe tener al menos 8 caracteres");
+    }
+    if (form.contrasena !== form.confirmar) {
+      return setError("¡Ups! Las contraseñas no coinciden");
     }
 
     setCargando(true);
@@ -59,29 +70,22 @@ export default function Registro() {
 
   return (
     <FondoToyStory>
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
 
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-black text-yellow-400
-                         drop-shadow-[2px_2px_0px_#1d4ed8]">
-            TOY STORE
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Crea tu cuenta y explora 🎮
-          </p>
-        </div>
+        {/* Logo de Toy Story */}
+        <ToyStoreLogo />
 
-        <h2 className="text-xl font-bold text-gray-700 mb-6">
+        <h2 className="text-xl font-bold text-gray-700 mb-6 border-b border-gray-100 pb-2">
           Crear cuenta
         </h2>
 
         {error && (
-          <div className="bg-red-100 text-red-600 p-3 rounded-xl mb-4 text-sm">
-            ⚠️ {error}
+          <div className="bg-red-100 text-red-600 p-3 rounded-xl mb-4 text-sm border border-red-200 animate-pulse">
+            {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <label className="text-sm font-semibold text-gray-600">Nombre</label>
           <input
             type="text"
@@ -89,7 +93,6 @@ export default function Registro() {
             placeholder="Tu nombre"
             value={form.nombre}
             onChange={handleChange}
-            required
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
                        focus:outline-none focus:border-yellow-400 transition"
           />
@@ -103,7 +106,6 @@ export default function Registro() {
             placeholder="tu@correo.com"
             value={form.email}
             onChange={handleChange}
-            required
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
                        focus:outline-none focus:border-yellow-400 transition"
           />
@@ -117,7 +119,6 @@ export default function Registro() {
             placeholder="Mínimo 8 caracteres"
             value={form.contrasena}
             onChange={handleChange}
-            required
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
                        focus:outline-none focus:border-yellow-400 transition"
           />
@@ -131,7 +132,6 @@ export default function Registro() {
             placeholder="Repite tu contraseña"
             value={form.confirmar}
             onChange={handleChange}
-            required
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
                        focus:outline-none focus:border-yellow-400 transition"
           />
@@ -146,17 +146,17 @@ export default function Registro() {
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-6
                        focus:outline-none focus:border-yellow-400 transition bg-white"
           >
-            <option value="2">Soy un Cliente 🧸</option>
-            <option value="1">Soy un Administrador 🔑</option>
+            <option value="2">Soy un Cliente</option>
+            <option value="1">Soy un Administrador</option>
           </select>
 
           <button
             type="submit"
             disabled={cargando}
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800
-                       font-bold py-3 rounded-xl transition text-lg"
+                       font-bold py-3 rounded-xl transition text-lg shadow-md"
           >
-            {cargando ? "Creando cuenta..." : "Crear cuenta 🎉"}
+            {cargando ? "Creando cuenta..." : "Crear cuenta"}
           </button>
         </form>
 

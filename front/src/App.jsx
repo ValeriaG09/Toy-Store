@@ -4,6 +4,8 @@ import Registro from "./pages/Registro";
 import Inicio from "./pages/Inicio";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/resetpassword";
+import GoogleAuthMock from "./pages/GoogleAuthMock";
+import GoogleLoginMock from "./pages/GoogleLoginMock";
 
 function RutaProtegida({ children }) {
   const token = localStorage.getItem("token");
@@ -19,6 +21,8 @@ export default function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/google-auth-mock" element={<GoogleAuthMock />} />
+        <Route path="/google-login-mock" element={<GoogleLoginMock />} />
         <Route path="/inicio" element={
           <RutaProtegida><Inicio /></RutaProtegida>
         }/>
