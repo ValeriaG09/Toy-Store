@@ -14,9 +14,8 @@ const registro = async (req, res) => {
   }
 
   try {
-    // Verificar si el email ya existe
     const [existe] = await db.query(
-      'SELECT id_usuario FROM usuarios WHERE email = ?', [email]
+      'SELECT id_usuario FROM usuarios WHERE email = $1', [email]
     );
     if (existe.length > 0) {
       return res.status(400).json({ error: 'El correo ya está registrado' });
@@ -37,7 +36,7 @@ const registro = async (req, res) => {
     }
 
     await db.query(
-      'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
+      'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4)',
       [nombre, email, hash, rolFinal]
     );
 
@@ -59,7 +58,7 @@ const login = async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
+      'SELECT * FROM usuarios WHERE email = $1', [email]
     );
 
     if (rows.length === 0) {
@@ -107,7 +106,7 @@ const forgotPassword = async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
+      'SELECT * FROM usuarios WHERE email = $1', [email]
     );
 
     // Siempre responde igual por seguridad
@@ -123,9 +122,8 @@ const forgotPassword = async (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
     const expiry = new Date(Date.now() + 3600000); // 1 hora
 
-    // Guardar token en la base de datos
     await db.query(
-      'UPDATE usuarios SET reset_token = ?, reset_token_expiry = ? WHERE id_usuario = ?',
+      'UPDATE usuarios SET reset_token = $1, reset_token_expiry = $2 WHERE id_usuario = $3',
       [token, expiry, usuario.id_usuario]
     );
 
@@ -185,10 +183,9 @@ const resetPassword = async (req, res) => {
   }
 
   try {
-    // Buscar token válido y no expirado
     const [rows] = await db.query(
       `SELECT * FROM usuarios 
-       WHERE reset_token = ? AND reset_token_expiry > NOW()`,
+       WHERE reset_token = $1 AND reset_token_expiry > NOW()`,
       [token]
     );
 
@@ -203,11 +200,10 @@ const resetPassword = async (req, res) => {
     // Encriptar nueva contraseña
     const hash = await bcrypt.hash(nuevaContrasena, 10);
 
-    // Actualizar contraseña y limpiar token
     await db.query(
       `UPDATE usuarios 
-       SET contrasena = ?, reset_token = NULL, reset_token_expiry = NULL 
-       WHERE id_usuario = ?`,
+       SET contrasena = $1, reset_token = NULL, reset_token_expiry = NULL 
+       WHERE id_usuario = $2`,
       [hash, usuario.id_usuario]
     );
 
@@ -230,7 +226,7 @@ const googleMock = async (req, res) => {
   try {
     // Buscar si el usuario ya existe
     let [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
+      'SELECT * FROM usuarios WHERE email = $1', [email]
     );
 
     let usuario;
@@ -238,13 +234,13 @@ const googleMock = async (req, res) => {
     if (rows.length === 0) {
       // Si no existe, lo creamos (rol cliente)
       const mockPass = await bcrypt.hash('google_mock_pass_123', 10);
-      const [result] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
+      const [resultRows] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario',
         [nombre || 'Usuario Google', email, mockPass, 2]
       );
       
       const [newRows] = await db.query(
-        'SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]
+        'SELECT * FROM usuarios WHERE id_usuario = $1', [resultRows[0].id_usuario]
       );
       usuario = newRows[0];
     } else {
@@ -321,17 +317,17 @@ const verifyGoogleMock = async (req, res) => {
 
   try {
     // Buscar si existe o crear
-    let [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+    let [rows] = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
     let usuario;
 
     if (rows.length === 0) {
       const hash = await bcrypt.hash('google_mock_pass_' + Date.now(), 10);
       const nombreFinal = nombre || email.split('@')[0]; // Usar parte del email si no hay nombre
-      const [result] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, 2)',
-        [nombreFinal, email, hash]
+      const [resultRows] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario',
+        [nombreFinal, email, hash, 2]
       );
-      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]);
+      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = $1', [resultRows[0].id_usuario]);
       usuario = newRows[0];
     } else {
       usuario = rows[0];

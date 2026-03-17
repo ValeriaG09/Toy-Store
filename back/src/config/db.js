@@ -1,21 +1,31 @@
-const mysql = require('mysql2/promise');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10
+const pool = new Pool({
+  connectionString: process.env.SUPABASE_DB_URL,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  // Adding connection timeout and keepalive config
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000
 });
 
-pool.getConnection()
-  .then(() => console.log('✅ Conectado a MySQL'))
+pool.connect()
+  .then(() => console.log('✅ Conectado a Supabase (PostgreSQL)'))
   .catch(err => {
-    console.error('❌ Error MySQL: No se pudo conectar a la base de datos.');
-    console.error('   Asegúrate de que MySQL esté corriendo y que los datos en .env sean correctos.');
+    console.error('❌ Error Supabase: No se pudo conectar a la base de datos.');
+    console.error('   Asegúrate de que los datos en .env sean correctos.');
     console.error(`   Detalle: ${err.message}`);
   });
 
-module.exports = pool;
+// Wrapper to make it compatible with mysql2 `[rows]` destructuring
+const db = {
+  query: async (text, params) => {
+    const result = await pool.query(text, params);
+    // pg returns { rows: [...] }, mysql2 returns [rows, fields]
+    return [result.rows, result.fields];
+  }
+};
+
+module.exports = db;
