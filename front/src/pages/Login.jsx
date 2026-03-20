@@ -1,16 +1,42 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FondoToyStory from "../components/FondoToyStory";
 import ToyStoreLogo from "../components/ToyStoreLogo";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Login() {
+  const { usuario, login, cargandoSesion } = useContext(AuthContext);
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", contrasena: "" });
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
+  // Auto-login si ya existe una sesión activa y global
+  useEffect(() => {
+    if (usuario) {
+      navigate('/inicio', { replace: true });
+    }
+  }, [usuario, navigate]);
+
+  // Autocompletado simulado (Detectar cuando se teclea un email guardado)
+  useEffect(() => {
+    const savedPasswords = JSON.parse(localStorage.getItem("mock_saved_passwords") || "{}");
+    if (form.email && savedPasswords[form.email] && !cargando) {
+      // Si reconoce el correo, autocompleta la contraseña si no estaba puesta ya
+      if (form.contrasena !== savedPasswords[form.email]) {
+        setForm(prev => ({ ...prev, contrasena: savedPasswords[form.email] }));
+      }
+      
+      // Simular clic "y lo mande de una vez a la pagina de inicio" para ambos casos
+      setTimeout(() => {
+        document.getElementById('btn-login-submit')?.click();
+      }, 500);
+    }
+  }, [form.email]);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -31,19 +57,30 @@ export default function Login() {
     setCargando(true);
 
     try {
-      const res = await fetch("http://localhost:5000/auth/login", {
+      const res = await fetch("http://127.0.0.1:5000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Importante para que el backend envíe y lea la cookie
         body: JSON.stringify(form),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // Guardar token y datos del usuario
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("usuario", JSON.stringify(data.usuario));
-        navigate("/inicio");
+        // Actualizar el estado global en lugar de localStorage
+        login(data.usuario);
+
+        // --- SISTEMA MOCK DE AUTOGUARDADO DE CONTRASEÑAS ---
+        const savedPasswords = JSON.parse(localStorage.getItem("mock_saved_passwords") || "{}");
+        
+        // Si no tenemos esta contraseña guardada, le preguntamos al usuario si quiere guardarla
+        if (savedPasswords[form.email] !== form.contrasena) {
+          localStorage.setItem("pending_save_email", form.email);
+          localStorage.setItem("pending_save_pass", form.contrasena);
+          localStorage.setItem("show_save_pass_prompt", "true"); // Dispara la ventana en /inicio
+        }
+
+        navigate("/inicio", { replace: true });
       } else {
         setError(data.error);
       }
@@ -53,6 +90,11 @@ export default function Login() {
       setCargando(false);
     }
   };
+
+  if (cargandoSesion) {
+    // Evita parpadeo mostrando algo sutil o nada mientras verifica
+    return <FondoToyStory />;
+  }
 
   return (
     <FondoToyStory>
@@ -109,6 +151,7 @@ export default function Login() {
           </div>
 
           <button
+            id="btn-login-submit"
             type="submit"
             disabled={cargando}
             className="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-800

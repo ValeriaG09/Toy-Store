@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FondoToyStory from "../components/FondoToyStory";
 import ToyStoreLogo from "../components/ToyStoreLogo";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Registro() {
+  const { usuario } = useContext(AuthContext);
   const navigate = useNavigate();
   const [form, setForm] = useState({
     nombre: "",
     email: "",
     contrasena: "",
-    confirmar: "",
-    id_rol: "2", // Valor por defecto: Cliente
+    confirmar: ""
   });
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -18,6 +19,10 @@ export default function Registro() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  useEffect(() => {
+    if (usuario) navigate("/inicio", { replace: true });
+  }, [usuario, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,14 +48,13 @@ export default function Registro() {
     setCargando(true);
 
     try {
-      const res = await fetch("http://localhost:5000/auth/registro", {
+      const res = await fetch("http://127.0.0.1:5000/auth/registro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre: form.nombre,
           email: form.email,
-          contrasena: form.contrasena,
-          id_rol: parseInt(form.id_rol),
+          contrasena: form.contrasena
         }),
       });
 
@@ -136,19 +140,7 @@ export default function Registro() {
                        focus:outline-none focus:border-yellow-400 transition"
           />
 
-          <label className="text-sm font-semibold text-gray-600">
-            ¿Quién eres?
-          </label>
-          <select
-            name="id_rol"
-            value={form.id_rol}
-            onChange={handleChange}
-            className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-6
-                       focus:outline-none focus:border-yellow-400 transition bg-white"
-          >
-            <option value="2">Soy un Cliente</option>
-            <option value="1">Soy un Administrador</option>
-          </select>
+
 
           <button
             type="submit"

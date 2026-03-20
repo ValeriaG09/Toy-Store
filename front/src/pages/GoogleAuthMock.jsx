@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function GoogleAuthMock() {
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const [paso, setPaso] = useState(1); // 1: Seleccionar cuenta, 2: Procesando
   const [menuAbierto, setMenuAbierto] = useState(null); // ID de la cuenta con menú abierto
@@ -26,18 +28,24 @@ export default function GoogleAuthMock() {
     // Simular retraso de red para ver la animación
     setTimeout(async () => {
       try {
-        const res = await fetch("http://localhost:5000/auth/google-mock", {
+        const res = await fetch("http://127.0.0.1:5000/auth/google-mock", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ email: cuenta.email, nombre: cuenta.nombre }),
         });
 
         const data = await res.json();
 
         if (res.ok) {
-          localStorage.setItem("token", data.token);
-          localStorage.setItem("usuario", JSON.stringify(data.usuario));
-          localStorage.setItem("show_save_pass_prompt", "true");
+          const savedPasswords = JSON.parse(localStorage.getItem("mock_saved_passwords") || "{}");
+          if (!savedPasswords[data.usuario.email]) {
+            localStorage.setItem("pending_save_email", data.usuario.email);
+            localStorage.setItem("pending_save_pass", "google-oauth-mock");
+            localStorage.setItem("show_save_pass_prompt", "true");
+          }
+
+          login(data.usuario);
           navigate("/inicio");
         } else {
           alert("Error: " + data.error);
@@ -52,7 +60,12 @@ export default function GoogleAuthMock() {
   };
 
   const eliminarCuenta = (id) => {
-    setCuentas(cuentas.filter(c => c.id !== id));
+    console.log("Intentando eliminar cuenta con ID:", id);
+    setCuentas(prev => {
+      const filtradas = prev.filter(c => String(c.id) !== String(id));
+      console.log("Cuentas después del filtro:", filtradas);
+      return filtradas;
+    });
     setMenuAbierto(null);
   };
 
@@ -96,72 +109,51 @@ export default function GoogleAuthMock() {
                       <p className="text-sm font-medium text-gray-700 truncate">{acc.nombre}</p>
                       <p className="text-xs text-gray-500 truncate">{acc.email}</p>
                     </div>
-                  </button>
-                  
-                  {/* Menu tres puntitos */}
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMenuAbierto(menuAbierto === acc.id ? null : acc.id);
-                      }}
-                      className="p-2 hover:bg-gray-100 rounded-full transition"
-                    >
-                      <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                      </svg>
-                    </button>
                     
-                    {menuAbierto === acc.id && (
-                      <div className="absolute right-0 mt-1 w-40 bg-white border border-gray-200 rounded shadow-lg z-50 py-1">
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            eliminarCuenta(acc.id);
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Eliminar
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                    {/* Botón de eliminar directo (bote de basura) */}
+                    <div 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        eliminarCuenta(acc.id);
+                      }}
+                      title="Eliminar esta cuenta"
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all group-hover:opacity-100 opacity-60 ml-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </div>
+                  </button>
                 </div>
               ))}
               
               <button 
                 onClick={() => navigate("/google-login-mock")}
-                className="w-full flex items-center gap-3 py-4 px-8 hover:bg-gray-50 transition text-left focus:outline-none border-t border-gray-100"
+                className="w-full flex items-center gap-3 py-4 px-8 hover:bg-gray-50 transition text-left focus:outline-none border-t border-gray-100 font-medium text-gray-700"
               >
                 <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-gray-600 border border-gray-200">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" strokeWidth="2" />
                   </svg>
                 </div>
-                <p className="text-sm font-medium text-gray-700">Usar otra cuenta</p>
+                Usar otra cuenta
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center py-20">
+            <div className="flex flex-col items-center py-20 animate-pulse">
               <div className="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-              <p className="mt-4 text-gray-600 animate-pulse">Iniciando sesión...</p>
+              <p className="mt-4 text-gray-600">Verificando tu cuenta...</p>
             </div>
           )}
         </div>
 
         {paso === 1 && (
           <div className="mt-10 text-[12px] text-gray-500 leading-normal border-t border-gray-100 pt-6">
-            Para continuar, Google compartirá tu nombre, dirección de correo electrónico, preferencia de idioma y foto de perfil con Toy Store. Antes de usar esta aplicación, puedes revisar su <a href="#" className="text-blue-600 font-medium hover:underline">Política de Privacidad</a> y sus <a href="#" className="text-blue-600 font-medium hover:underline">Términos del Servicio</a>.
+            Para continuar, Google compartirá tu nombre, correo electrónico y foto con Toy Store. Antes de usar esta aplicación, puedes revisar su <a href="#" className="text-blue-600 font-medium hover:underline">Política de Privacidad</a>.
           </div>
         )}
       </div>
-
-      {menuAbierto && (
-        <div className="fixed inset-0 z-40" onClick={() => setMenuAbierto(null)}></div>
-      )}
     </div>
   );
 }

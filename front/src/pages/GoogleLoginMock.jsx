@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 export default function GoogleLoginMock() {
+  const { usuario, login } = useContext(AuthContext);
   const navigate = useNavigate();
   const [paso, setPaso] = useState(1); // 1: Email, 2: Password, 3: Código
   const [form, setForm] = useState({ 
@@ -17,6 +19,12 @@ export default function GoogleLoginMock() {
     setError("");
   };
 
+  useEffect(() => {
+    if (usuario) {
+      navigate("/inicio", { replace: true });
+    }
+  }, [usuario, navigate]);
+
   const siguientePaso = async () => {
     if (paso === 1) {
       if (!form.email) return setError("Introduce un correo electrónico");
@@ -31,9 +39,10 @@ export default function GoogleLoginMock() {
       
       setCargando(true);
       try {
-        const res = await fetch("http://localhost:5000/auth/google-send-code", {
+        const res = await fetch("http://127.0.0.1:5000/auth/google-send-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ email: form.email }),
         });
         
@@ -60,9 +69,10 @@ export default function GoogleLoginMock() {
     if (!form.codigo) return setError("Introduce el código de verificación");
     setCargando(true);
     try {
-      const res = await fetch("http://localhost:5000/auth/google-register", {
+      const res = await fetch("http://127.0.0.1:5000/auth/google-register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ 
           email: form.email, 
           codigo: form.codigo
@@ -70,8 +80,7 @@ export default function GoogleLoginMock() {
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("usuario", JSON.stringify(data.usuario));
+        login(data.usuario);
         
         // Agregar a la lista de cuentas de Google Mock si no está
         const saved = JSON.parse(localStorage.getItem("google_accounts_mock") || "[]");
@@ -85,7 +94,13 @@ export default function GoogleLoginMock() {
           localStorage.setItem("google_accounts_mock", JSON.stringify([...saved, newAcc]));
         }
         
-        localStorage.setItem("show_save_pass_prompt", "true");
+        const savedPasswords = JSON.parse(localStorage.getItem("mock_saved_passwords") || "{}");
+        if (!savedPasswords[data.usuario.email]) {
+          localStorage.setItem("pending_save_email", data.usuario.email);
+          localStorage.setItem("pending_save_pass", "google-oauth-mock");
+          localStorage.setItem("show_save_pass_prompt", "true");
+        }
+
         navigate("/inicio");
       } else {
         setError(data.error || "Código incorrecto");
@@ -139,10 +154,14 @@ export default function GoogleLoginMock() {
             <div className="space-y-6 animate-step-in">
               <div className="relative">
                 <input 
-                  type="email" name="email" placeholder="Correo electrónico o teléfono" 
-                  value={form.email} onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-md p-4 text-base focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
-                />
+                type="text" 
+                name="email"
+                placeholder="Correo electrónico o teléfono" 
+                value={form.email}
+                onChange={handleChange}
+                onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
+                className="w-full text-base py-3 px-3 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+              />
               </div>
               <p className="text-sm text-blue-600 font-medium cursor-pointer hover:underline">¿Has olvidado tu correo electrónico?</p>
               <p className="text-sm text-gray-600 leading-relaxed">¿No es tu ordenador? Usa una ventana privada para iniciar sesión. <a href="#" className="text-blue-600 font-medium hover:underline">Más información</a></p>
@@ -152,9 +171,13 @@ export default function GoogleLoginMock() {
           {paso === 2 && (
             <div className="space-y-6 animate-step-in">
               <input 
-                type="password" name="contrasena" placeholder="Introduce tu contraseña" 
-                value={form.contrasena} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-4 text-base focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+                type="password" 
+                name="contrasena"
+                placeholder="Introduce tu contraseña" 
+                value={form.contrasena}
+                onChange={handleChange}
+                onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
+                className="w-full text-base py-3 px-3 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
               />
               <p className="text-sm text-blue-600 font-medium cursor-pointer hover:underline">¿Has olvidado tu contraseña?</p>
             </div>

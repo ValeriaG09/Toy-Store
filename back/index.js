@@ -1,24 +1,25 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
-
-// ─── Evita que el servidor se caiga por errores no controlados ───
-process.on('uncaughtException', (err) => {
-  console.error('⚠️ Excepción no capturada (el servidor sigue corriendo):', err.message);
-});
-process.on('unhandledRejection', (reason) => {
-  console.error('⚠️ Promesa rechazada no manejada (el servidor sigue corriendo):', reason);
-});
 
 const authRoutes = require('./src/routes/auth.routes');
 
 const app = express();
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: function (origin, callback) {
+    // Permitir llamadas sin origin (postman) o desde localhost / 127.0.0.1
+    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Rutas
 app.use('/auth', authRoutes);

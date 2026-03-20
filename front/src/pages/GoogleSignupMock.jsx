@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 
 export default function GoogleSignupMock() {
+  const { usuario, login } = useContext(AuthContext);
   const navigate = useNavigate();
   const [paso, setPaso] = useState(1); // 1: Info personal, 2: Email, 3: Código
   const [form, setForm] = useState({ 
@@ -19,6 +21,12 @@ export default function GoogleSignupMock() {
     setError("");
   };
 
+  useEffect(() => {
+    if (usuario) {
+      navigate("/inicio", { replace: true });
+    }
+  }, [usuario, navigate]);
+
   const siguientePaso = async () => {
     if (paso === 1) {
       if (!form.nombre || !form.apellido) return setError("Introduce tu nombre");
@@ -29,9 +37,10 @@ export default function GoogleSignupMock() {
       
       setCargando(true);
       try {
-        const res = await fetch("http://localhost:5000/auth/google-send-code", {
+        const res = await fetch("http://127.0.0.1:5000/auth/google-send-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ email: form.email }),
         });
         if (res.ok) setPaso(3);
@@ -48,9 +57,10 @@ export default function GoogleSignupMock() {
     if (!form.codigo) return setError("Introduce el código");
     setCargando(true);
     try {
-      const res = await fetch("http://localhost:5000/auth/google-register", {
+      const res = await fetch("http://127.0.0.1:5000/auth/google-register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ 
           email: form.email, 
           nombre: `${form.nombre} ${form.apellido}`,
@@ -59,8 +69,7 @@ export default function GoogleSignupMock() {
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("usuario", JSON.stringify(data.usuario));
+        login(data.usuario);
         
         // Agregar a la lista de cuentas de Google Mock
         const saved = JSON.parse(localStorage.getItem("google_accounts_mock") || "[]");
@@ -72,7 +81,13 @@ export default function GoogleSignupMock() {
         };
         localStorage.setItem("google_accounts_mock", JSON.stringify([...saved, newAcc]));
         
-        localStorage.setItem("show_save_pass_prompt", "true");
+        const savedPasswords = JSON.parse(localStorage.getItem("mock_saved_passwords") || "{}");
+        if (!savedPasswords[data.usuario.email]) {
+          localStorage.setItem("pending_save_email", data.usuario.email);
+          localStorage.setItem("pending_save_pass", "google-oauth-mock");
+          localStorage.setItem("show_save_pass_prompt", "true");
+        }
+
         navigate("/inicio");
       } else {
         setError(data.error || "Código incorrecto");
@@ -110,11 +125,13 @@ export default function GoogleSignupMock() {
               <input 
                 type="text" name="nombre" placeholder="Nombre" 
                 value={form.nombre} onChange={handleChange}
+                onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
                 className="w-full border border-gray-300 rounded-md p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
               <input 
                 type="text" name="apellido" placeholder="Apellido" 
                 value={form.apellido} onChange={handleChange}
+                onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
                 className="w-full border border-gray-300 rounded-md p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
             </div>
@@ -125,11 +142,13 @@ export default function GoogleSignupMock() {
               <input 
                 type="email" name="email" placeholder="Email (ej. mariana@gmail.com)" 
                 value={form.email} onChange={handleChange}
+                onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
                 className="w-full border border-gray-300 rounded-md p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
               <input 
                 type="password" name="contrasena" placeholder="Contraseña" 
                 value={form.contrasena} onChange={handleChange}
+                onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
                 className="w-full border border-gray-300 rounded-md p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
               <p className="text-xs text-gray-500">Usa 8 o más caracteres con una combinación de letras, números y símbolos.</p>
@@ -142,6 +161,7 @@ export default function GoogleSignupMock() {
               <input 
                 type="text" name="codigo" placeholder="Introduce el código" 
                 value={form.codigo} onChange={handleChange} maxLength="6"
+                onKeyDown={(e) => e.key === 'Enter' && confirmarRegistro()}
                 className="w-full border border-gray-300 rounded-md p-3 text-center text-2xl tracking-[10px] focus:border-blue-500 outline-none"
               />
             </div>

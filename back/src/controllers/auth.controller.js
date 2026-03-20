@@ -5,6 +5,16 @@ const db = require('../config/db');
 const transporter = require('../config/mailer');
 require('dotenv').config();
 
+// Helper para crear la cookie
+const setTokenCookie = (res, token) => {
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 8 * 60 * 60 * 1000 // 8 horas
+  });
+};
+
 // ─── REGISTRO ───────────────────────────────────────
 const registro = async (req, res) => {
   const { nombre, email, contrasena, id_rol } = req.body;
@@ -24,16 +34,9 @@ const registro = async (req, res) => {
     // Encriptar contraseña
     const hash = await bcrypt.hash(contrasena, 10);
 
-    // Guardar usuario
-    // Si no se envía id_rol, por defecto es 2 (cliente)
-    const rolFinal = parseInt(id_rol) || 2;
-
-    // RESTRICCIÓN: Solo el correo fijo puede ser Admin
-    if (rolFinal === 1 && email !== process.env.ADMIN_EMAIL) {
-      return res.status(403).json({
-        error: 'No tienes permiso para registrarte como Administrador ✋'
-      });
-    }
+    // DETERMINAR ROL: Si el correo está en la lista de admin, es admin (1). Si no, es cliente (2).
+    const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
+    const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
     await db.query(
       'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4)',
@@ -79,9 +82,10 @@ const login = async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    setTokenCookie(res, token);
+
     res.json({
       message: '¡Bienvenidx a Toy Store! 🧸',
-      token,
       usuario: {
         id: usuario.id_usuario,
         nombre: usuario.nombre,
@@ -232,11 +236,16 @@ const googleMock = async (req, res) => {
     let usuario;
 
     if (rows.length === 0) {
-      // Si no existe, lo creamos (rol cliente)
+      // Si no existe, lo creamos
       const mockPass = await bcrypt.hash('google_mock_pass_123', 10);
+      
+      // DETERMINAR ROL AUTOMÁTICAMENTE
+      const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
+      const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
+
       const [resultRows] = await db.query(
         'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario',
-        [nombre || 'Usuario Google', email, mockPass, 2]
+        [nombre || 'Usuario Google', email, mockPass, rolFinal]
       );
       
       const [newRows] = await db.query(
@@ -254,9 +263,10 @@ const googleMock = async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    setTokenCookie(res, token);
+
     res.json({
       message: '¡Bienvenidx con Google! 🧸',
-      token,
       usuario: {
         id: usuario.id_usuario,
         nombre: usuario.nombre,
@@ -322,10 +332,15 @@ const verifyGoogleMock = async (req, res) => {
 
     if (rows.length === 0) {
       const hash = await bcrypt.hash('google_mock_pass_' + Date.now(), 10);
-      const nombreFinal = nombre || email.split('@')[0]; // Usar parte del email si no hay nombre
+      const nombreFinal = nombre || email.split('@')[0]; 
+      
+      // DETERMINAR ROL AUTOMÁTICAMENTE
+      const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
+      const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
+
       const [resultRows] = await db.query(
         'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario',
-        [nombreFinal, email, hash, 2]
+        [nombreFinal, email, hash, rolFinal]
       );
       const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = $1', [resultRows[0].id_usuario]);
       usuario = newRows[0];
@@ -341,13 +356,36 @@ const verifyGoogleMock = async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    setTokenCookie(res, token);
+
     res.json({
-      token,
       usuario: { id: usuario.id_usuario, nombre: usuario.nombre, email: usuario.email, rol: usuario.id_rol }
     });
   } catch (error) {
     res.status(500).json({ error: 'Error en registro' });
   }
 };
+// ─── SESIÓN CURRENT ─────────────────────────────────
+const getMe = async (req, res) => {
+  const token = req.cookies.token;
+  // En lugar de devolver 401 (que pinta la consola de rojo), devolvemos 200 con un mensaje normal
+  if (!token) return res.json({ usuario: null, message: 'No autenticado' });
 
-module.exports = { registro, login, forgotPassword, resetPassword, googleMock, sendGoogleVerification, verifyGoogleMock };
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const [rows] = await db.query('SELECT id_usuario, nombre, email, id_rol FROM usuarios WHERE id_usuario = $1', [decoded.id]);
+    if (rows.length === 0) return res.json({ usuario: null, message: 'Usuario no encontrado' });
+    
+    res.json({ usuario: { id: rows[0].id_usuario, nombre: rows[0].nombre, email: rows[0].email, rol: rows[0].id_rol } });
+  } catch (err) {
+    // Retornamos 200 con usuario null para evitar el log de error de red nativo del navegador
+    res.json({ usuario: null, message: 'Sesión inválida o expirada' });
+  }
+};
+
+const logout = (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Sesión cerrada exitosamente' });
+};
+
+module.exports = { registro, login, forgotPassword, resetPassword, googleMock, sendGoogleVerification, verifyGoogleMock, getMe, logout };
