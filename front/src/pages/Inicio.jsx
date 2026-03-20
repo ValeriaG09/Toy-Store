@@ -18,25 +18,21 @@ export default function Inicio() {
       {/* --- NAVBAR --- */}
       <nav className="bg-white px-6 py-3 flex justify-between items-center shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          {/* Logo Placeholder */}
-          <div className="flex flex-col items-center">
-            <div className="text-2xl">🧸</div>
-            <div className="text-[10px] font-bold text-blue-800 leading-tight text-center">
-              TOY STORE<br/>
-              <span className="text-red-500 font-normal">Donde tus juguetes<br/>cobran vida</span>
-            </div>
-          </div>
+          {/* Logo */}
+          <img
+            src="/images/toy_store_logo.png"
+            alt="Toy Store"
+            className="h-14 w-auto object-contain"
+          />
         </div>
 
-        <div className="flex items-center gap-6 text-gray-600 font-semibold text-sm">
-          <a href="#" className="hover:text-blue-500">Inicio</a>
-          <a href="#" className="bg-white border-2 border-gray-100 px-4 py-1 rounded-full shadow-inner text-gray-800">Tienda</a>
-          <a href="#" className="bg-yellow-400 text-white px-3 py-1 rounded-lg">Guia</a>
-          <a href="#" className="hover:text-blue-500">Explora tus deseos</a>
-          <a href="#" className="hover:text-blue-500">Noticias</a>
-          <button className="bg-red-500 text-white px-5 py-2 rounded-full font-bold shadow-md hover:bg-red-600 transition">
-            Contacto
-          </button>
+        <div className="flex items-center gap-4 font-semibold text-sm">
+          <a href="#" className="bg-white text-gray-800 px-5 py-2 rounded-full border border-gray-200 shadow-sm hover:bg-yellow-400 hover:text-white active:bg-yellow-500 transition">Inicio</a>
+          <a href="#" className="bg-white text-gray-800 px-5 py-2 rounded-full border border-gray-200 shadow-sm hover:bg-blue-500 hover:text-white active:bg-blue-600 transition">Tienda</a>
+          <a href="#" className="bg-white text-gray-800 px-5 py-2 rounded-full border border-gray-200 shadow-sm hover:bg-red-500 hover:text-white active:bg-red-600 transition">Guia</a>
+          <a href="#" className="bg-white text-gray-800 px-5 py-2 rounded-full border border-gray-200 shadow-sm hover:bg-yellow-400 hover:text-white active:bg-yellow-500 transition">Explora tus deseos</a>
+          <a href="#" className="bg-white text-gray-800 px-5 py-2 rounded-full border border-gray-200 shadow-sm hover:bg-blue-500 hover:text-white active:bg-blue-600 transition">Noticias</a>
+          <a href="#" className="bg-white text-gray-800 px-5 py-2 rounded-full border border-gray-200 shadow-sm hover:bg-red-500 hover:text-white active:bg-red-600 transition">Contacto</a>
         </div>
 
         <div className="flex items-center gap-3 border-l pl-6 border-gray-200">
@@ -91,13 +87,7 @@ export default function Inicio() {
 
       {/* --- CATEGORIES SECTION --- */}
       <section className="bg-[#4D3A7A] py-16 px-6 flex flex-col items-center">
-        {/* Carousel Dots */}
-        <div className="flex gap-3 mb-12">
-          <div className="w-3 h-3 rounded-full bg-orange-300"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-400 scale-125"></div>
-          <div className="w-3 h-3 rounded-full bg-white"></div>
-          <div className="w-3 h-3 rounded-full bg-gray-400 opacity-50"></div>
-        </div>
+
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 max-w-6xl w-full">
           {/* Category Cards */}

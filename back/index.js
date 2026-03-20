@@ -2,6 +2,14 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+// ─── Evita que el servidor se caiga por errores no controlados ───
+process.on('uncaughtException', (err) => {
+  console.error('⚠️ Excepción no capturada (el servidor sigue corriendo):', err.message);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('⚠️ Promesa rechazada no manejada (el servidor sigue corriendo):', reason);
+});
+
 const authRoutes = require('./src/routes/auth.routes');
 
 const app = express();
