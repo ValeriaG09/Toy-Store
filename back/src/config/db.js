@@ -11,6 +11,14 @@ const pool = new Pool({
   idleTimeoutMillis: 30000
 });
 
+// Previene que se caiga el servidor backend (Node) si Supabase 
+// cierra conexiones inactivas después de mucho tiempo.
+pool.on('error', (err, client) => {
+  console.error('❌ Error en el cliente inactivo de PostgreSQL (Supabase)', err);
+  // La base de datos intentará reconectar automáticamente al hacer un nuevo query,
+  // el servidor no se va a detener por esta excepción no controlada.
+});
+
 pool.connect()
   .then(() => console.log('✅ Conectado a Supabase (PostgreSQL)'))
   .catch(err => {
