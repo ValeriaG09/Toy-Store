@@ -60,7 +60,24 @@
     animation: float 6s ease-in-out infinite;
   }
 
-  /* Barra de carga estilo Google (más realista con dos segmentos) */
+  /* Nubes simples transparentes extraídas por script */
+  .shape-cloud {
+    opacity: 0.8; /* Transparentoza por defecto */
+    pointer-events: none;
+    filter: drop-shadow(0px 2px 5px rgba(0,0,0,0.05));
+    /* La posición ahora la maneja el div contenedor para no pisar el transform */
+  }
+
+  /* Animación compleja de nubes (flotación en ambos ejes) */
+  @keyframes float-complex {
+    0% { transform: translate(0px, 0px); }
+    33% { transform: translate(30px, -20px); }
+    66% { transform: translate(-20px, 25px); }
+    100% { transform: translate(0px, 0px); }
+  }
+  .animate-float-complex {
+    animation: float-complex 15s ease-in-out infinite;
+  }
   @keyframes google-loading-primary {
     0% { left: -35%; width: 33%; }
     100% { left: 100%; width: 33%; }
