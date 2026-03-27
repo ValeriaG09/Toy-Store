@@ -103,6 +103,7 @@ export default function Inicio() {
   const { usuario, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [dropdownAbierto, setDropdownAbierto] = useState(false);
+  const [menuAbierto, setMenuAbierto] = useState(false);
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
   // Control de vista (solo para admins)
   const [vistaAdmin, setVistaAdmin] = useState(usuario?.rol === 1);
@@ -173,7 +174,7 @@ export default function Inicio() {
             <img src={ToyStoreLogoImg} alt="Toy Store Logo" className="h-[60px] md:h-[75px] w-auto object-contain" />
           </div>
 
-          <div className="flex items-center gap-10 text-gray-700 font-bold text-[13px] uppercase tracking-wider">
+          <div className="hidden lg:flex items-center gap-10 text-gray-700 font-bold text-[13px] uppercase tracking-wider">
             <a href="#" className="text-blue-600 border-b-2 border-blue-600 pb-1">Inicio</a>
             <a href="#" className="hover:text-blue-500 transition-colors" onClick={() => navigate('/tienda')}>Tienda</a>
             <a href="#" className="hover:text-blue-500 transition-colors" onClick={() => navigate('/guia')}>Guia</a>
@@ -181,7 +182,21 @@ export default function Inicio() {
             <a href="#" className="hover:text-blue-500 transition-colors" onClick={() => navigate('/contacto')}>Contacto</a>
           </div>
 
-          <div className="flex items-center gap-6 border-l pl-8 border-gray-100 relative">
+          <div className="flex items-center gap-4 lg:gap-6 lg:border-l pl-2 lg:pl-8 border-gray-100 relative">
+            {/* Hamburger Button (Mobile Only) */}
+            <button 
+              className="lg:hidden p-2 text-gray-700 hover:text-blue-600 transition"
+              onClick={() => setMenuAbierto(!menuAbierto)}
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {menuAbierto ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+
             {usuario && (
               <div className="hidden lg:flex flex-col items-end">
                 <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Sargento al mando:</span>
@@ -249,6 +264,17 @@ export default function Inicio() {
             </div>
           </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {menuAbierto && (
+          <div className="lg:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 flex flex-col pointer-events-auto animate-in fade-in slide-in-from-top-4 duration-200">
+            <a href="#" className="p-4 border-b border-gray-50 text-blue-600 font-bold uppercase text-center" onClick={() => setMenuAbierto(false)}>Inicio</a>
+            <a href="#" className="p-4 border-b border-gray-50 text-gray-600 font-bold uppercase text-center hover:bg-gray-50 transition" onClick={() => { navigate('/tienda'); setMenuAbierto(false); }}>Tienda</a>
+            <a href="#" className="p-4 border-b border-gray-50 text-gray-600 font-bold uppercase text-center hover:bg-gray-50 transition" onClick={() => { navigate('/guia'); setMenuAbierto(false); }}>Guia</a>
+            <a href="#" className="p-4 border-b border-gray-50 text-gray-600 font-bold uppercase text-center hover:bg-gray-50 transition" onClick={() => { navigate('/explora'); setMenuAbierto(false); }}>Explora</a>
+            <a href="#" className="p-4 text-gray-600 font-bold uppercase text-center hover:bg-gray-50 transition" onClick={() => { navigate('/contacto'); setMenuAbierto(false); }}>Contacto</a>
+          </div>
+        )}
       </nav>
 
       {/* --- HABITACIÓN DE ANDY / MAQUETA --- */}

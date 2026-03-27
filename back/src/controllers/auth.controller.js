@@ -25,7 +25,7 @@ const registro = async (req, res) => {
 
   try {
     const [existe] = await db.query(
-      'SELECT id_usuario FROM usuarios WHERE email = $1', [email]
+      'SELECT id_usuario FROM usuarios WHERE email = ?', [email]
     );
     if (existe.length > 0) {
       return res.status(400).json({ error: 'El correo ya está registrado' });
@@ -39,7 +39,7 @@ const registro = async (req, res) => {
     const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
     await db.query(
-      'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4)',
+      'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
       [nombre, email, hash, rolFinal]
     );
 
@@ -61,7 +61,7 @@ const login = async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = $1', [email]
+      'SELECT * FROM usuarios WHERE email = ?', [email]
     );
 
     if (rows.length === 0) {
@@ -114,7 +114,7 @@ const forgotPassword = async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = $1', [email]
+      'SELECT * FROM usuarios WHERE email = ?', [email]
     );
 
     // Siempre responde igual por seguridad
@@ -131,7 +131,7 @@ const forgotPassword = async (req, res) => {
     const expiry = new Date(Date.now() + 3600000); // 1 hora
 
     await db.query(
-      'UPDATE usuarios SET reset_token = $1, reset_token_expiry = $2 WHERE id_usuario = $3',
+      'UPDATE usuarios SET reset_token = ?, reset_token_expiry = ? WHERE id_usuario = ?',
       [token, expiry, usuario.id_usuario]
     );
 
@@ -193,7 +193,7 @@ const resetPassword = async (req, res) => {
   try {
     const [rows] = await db.query(
       `SELECT * FROM usuarios 
-       WHERE reset_token = $1 AND reset_token_expiry > NOW()`,
+       WHERE reset_token = ? AND reset_token_expiry > NOW()`,
       [token]
     );
 
@@ -210,8 +210,8 @@ const resetPassword = async (req, res) => {
 
     await db.query(
       `UPDATE usuarios 
-       SET contrasena = $1, reset_token = NULL, reset_token_expiry = NULL 
-       WHERE id_usuario = $2`,
+       SET contrasena = ?, reset_token = NULL, reset_token_expiry = NULL 
+       WHERE id_usuario = ?`,
       [hash, usuario.id_usuario]
     );
 
@@ -234,7 +234,7 @@ const googleMock = async (req, res) => {
   try {
     // Buscar si el usuario ya existe
     let [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = $1', [email]
+      'SELECT * FROM usuarios WHERE email = ?', [email]
     );
 
     let usuario;
@@ -242,18 +242,17 @@ const googleMock = async (req, res) => {
     if (rows.length === 0) {
       // Si no existe, lo creamos
       const mockPass = await bcrypt.hash('google_mock_pass_123', 10);
-      
       // DETERMINAR ROL AUTOMÁTICAMENTE
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
-      const [resultRows] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario',
+      const [result] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
         [nombre || 'Usuario Google', email, mockPass, rolFinal]
       );
       
       const [newRows] = await db.query(
-        'SELECT * FROM usuarios WHERE id_usuario = $1', [resultRows[0].id_usuario]
+        'SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]
       );
       usuario = newRows[0];
     } else {
@@ -331,22 +330,22 @@ const verifyGoogleMock = async (req, res) => {
 
   try {
     // Buscar si existe o crear
-    let [rows] = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
+    let [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
     let usuario;
 
     if (rows.length === 0) {
       const hash = await bcrypt.hash('google_mock_pass_' + Date.now(), 10);
-      const nombreFinal = nombre || email.split('@')[0]; 
+      const nombreFinal = nombre || email.split('@')[0]; // Usar parte del email si no hay nombre
       
       // DETERMINAR ROL AUTOMÁTICAMENTE
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
-      const [resultRows] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES ($1, $2, $3, $4) RETURNING id_usuario',
+      const [result] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
         [nombreFinal, email, hash, rolFinal]
       );
-      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = $1', [resultRows[0].id_usuario]);
+      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]);
       usuario = newRows[0];
     } else {
       usuario = rows[0];
@@ -377,7 +376,7 @@ const getMe = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const [rows] = await db.query('SELECT id_usuario, nombre, email, id_rol FROM usuarios WHERE id_usuario = $1', [decoded.id]);
+    const [rows] = await db.query('SELECT id_usuario, nombre, email, id_rol FROM usuarios WHERE id_usuario = ?', [decoded.id]);
     if (rows.length === 0) return res.json({ usuario: null, message: 'Usuario no encontrado' });
     
     res.json({ usuario: { id: rows[0].id_usuario, nombre: rows[0].nombre, email: rows[0].email, rol: rows[0].id_rol } });
