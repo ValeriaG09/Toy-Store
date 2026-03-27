@@ -8,14 +8,7 @@ const authRoutes = require('./src/routes/auth.routes');
 const app = express();
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permitir llamadas sin origin (postman) o desde localhost / 127.0.0.1
-    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      callback(null, true);
-    } else {
-      callback(new Error('No permitido por CORS'));
-    }
-  },
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
@@ -36,6 +29,6 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor en http://localhost:${PORT}`);
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`🚀 Servidor en http://127.0.0.1:${PORT}`);
 });

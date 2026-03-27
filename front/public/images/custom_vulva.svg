@@ -1,0 +1,19 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer Left -->
+  <path d="M 50 5 Q 15 50 50 95" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="70 10 100" />
+  
+  <!-- Outer Right -->
+  <path d="M 50 95 Q 85 50 50 5" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="75 10 100" />
+  
+  <!-- Inner Left -->
+  <path d="M 50 20 Q 30 50 50 80" stroke="white" stroke-width="3" stroke-linecap="round" stroke-dasharray="15 8 100" />
+  
+  <!-- Inner Right -->
+  <path d="M 50 80 Q 70 50 50 20" stroke="white" stroke-width="3" stroke-linecap="round" stroke-dasharray="15 8 100" />
+  
+  <!-- Clitoris (Hollow Oval) -->
+  <ellipse cx="50" cy="30" rx="3.5" ry="5" stroke="white" stroke-width="2.5" fill="none" />
+  
+  <!-- Vertical slit -->
+  <path d="M 50 42 L 50 72" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="12 6 100" />
+</svg>

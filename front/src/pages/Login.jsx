@@ -84,8 +84,9 @@ export default function Login() {
       } else {
         setError(data.error);
       }
-    } catch {
-      setError("No se pudo conectar con el servidor.");
+    } catch (err) {
+      console.error("Login reachability error:", err);
+      setError("No se pudo conectar con el servidor. Verifica que el backend esté corriendo.");
     } finally {
       setCargando(false);
     }

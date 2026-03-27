@@ -8,6 +8,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/resetpassword";
 import GoogleAuthMock from "./pages/GoogleAuthMock";
 import GoogleLoginMock from "./pages/GoogleLoginMock";
+import Tienda from "./pages/Tienda";
+import Contacto from "./pages/Contacto";
+import Guia from "./pages/Guia";
+import Explora from "./pages/Explora";
 
 function RutaProtegida({ children }) {
   const { usuario, cargandoSesion } = useContext(AuthContext);
@@ -28,16 +32,18 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<Inicio />} />
+          <Route path="/inicio" element={<Inicio />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/google-auth-mock" element={<GoogleAuthMock />} />
           <Route path="/google-login-mock" element={<GoogleLoginMock />} />
-          <Route path="/inicio" element={
-            <RutaProtegida><Inicio /></RutaProtegida>
-          }/>
+          <Route path="/tienda" element={<Tienda />} />
+          <Route path="/contacto" element={<Contacto />} />
+          <Route path="/guia" element={<Guia />} />
+          <Route path="/explora" element={<Explora />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

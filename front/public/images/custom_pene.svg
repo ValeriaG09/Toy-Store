@@ -1,0 +1,10 @@
+<svg viewBox="0 0 100 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shaft with rounded top -->
+  <path d="M 35 30 A 15 15 0 0 1 65 30 L 65 100 L 35 100 Z" fill="white" />
+  <!-- Head -->
+  <circle cx="50" cy="28" r="18" fill="white" />
+  <!-- Left testicle -->
+  <circle cx="35" cy="100" r="25" fill="white" />
+  <!-- Right testicle -->
+  <circle cx="65" cy="100" r="25" fill="white" />
+</svg>

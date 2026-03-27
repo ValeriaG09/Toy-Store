@@ -9,12 +9,12 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-transporter.verify((error) => {
-  if (error) {
-    console.error('❌ Error correo:', error.message);
-  } else {
-    console.log('✅ Correo listo para enviar');
-  }
-});
+// Verificamos conexión de forma asíncrona para que NO detenga el servidor si falla
+transporter.verify()
+  .then(() => console.log('✅ Correo real listo para enviar'))
+  .catch((error) => {
+    console.error('❌ Error de conexión SMTP (Gmail):', error.message);
+    console.log('⚠️  El servidor sigue funcionando, pero no se enviarán correos hasta corregir .env');
+  });
 
 module.exports = transporter;
