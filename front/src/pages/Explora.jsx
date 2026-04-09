@@ -1,38 +1,63 @@
 import React from 'react';
 import RoomWrapper from '../components/RoomWrapper';
-import { useNavigate } from 'react-router-dom';
+
+/**
+ * AlienSpaceBg: Recreación del traje y cara de los Aliens (Marcianos).
+ */
+const AlienSpaceBg = () => (
+  <div className="absolute inset-0 flex flex-col overflow-hidden bg-[#1E3A8A]">
+    {/* PARTE SUPERIOR: Piel Verde y 3 Ojos */}
+    <div className="h-[40%] bg-[#7FFF00] relative z-20 shadow-lg">
+      <div className="absolute inset-0 flex justify-center items-end pb-8 gap-4 md:gap-8">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className={`w-16 h-16 md:w-24 md:h-24 bg-white rounded-full border-4 border-gray-200 shadow-2xl flex items-center justify-center relative overflow-hidden ${i === 2 ? 'mb-6' : ''}`}>
+             <div className="w-6 h-6 md:w-10 md:h-10 bg-black rounded-full shadow-inner animate-pulse"></div>
+             {/* Animación de parpadeo (Blink) */}
+             <div className="absolute inset-0 bg-[#7FFF00] animate-[blink_5s_infinite] origin-top"></div>
+          </div>
+        ))}
+      </div>
+      {/* Sombra de profundidad en la base de la cara */}
+      <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-black/10 to-transparent"></div>
+    </div>
+
+    {/* CUELLO: Banda Púrpura */}
+    <div className="h-[10%] bg-[#9333EA] relative z-10 shadow-md">
+       <svg className="absolute top-0 left-0 w-full h-[30px]" viewBox="0 0 1000 100" preserveAspectRatio="none">
+          <path d="M0,0 C250,100 750,100 1000,0 L1000,0 L0,0 Z" fill="#7FFF00" />
+       </svg>
+    </div>
+
+    {/* CUERPO: Traje Azul Espacial con Logo Pizza Planet */}
+    <div className="flex-1 bg-[#1E3A8A] relative flex items-center justify-center">
+       {/* Marca de agua Pizza Planet */}
+       <svg viewBox="0 0 200 200" className="w-64 h-64 opacity-10 fill-white drop-shadow-2xl">
+          <circle cx="100" cy="100" r="80" stroke="white" strokeWidth="8" fill="none" />
+          <ellipse cx="100" cy="100" rx="90" ry="30" stroke="white" strokeWidth="6" fill="none" transform="rotate(-30 100 100)" />
+          <path d="M70,80 L130,80 L100,130 Z" /> {/* Pizza Slice / Rocket */}
+       </svg>
+       {/* Estrellas decorativas */}
+       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
+    </div>
+
+    <style>{`
+      @keyframes blink {
+        0%, 90%, 100% { transform: scaleY(0); }
+        95% { transform: scaleY(1); }
+      }
+    `}</style>
+  </div>
+);
 
 export default function Explora() {
-  const navigate = useNavigate();
   return (
-    <RoomWrapper theme="aliens">
-      <div className="p-10">
-        <button 
-          onClick={() => navigate('/')}
-          className="mb-6 bg-green-500 text-indigo-900 px-6 py-2 rounded-full font-black shadow-lg hover:bg-green-600 transition"
-        >
-          ← VOLVER AL CUARTO
-        </button>
-        
-        <div className="maqueta-card p-10 max-w-4xl mx-auto border-b-8 border-green-400 bg-indigo-950/80 backdrop-blur-md">
-          <h1 className="text-4xl font-black text-green-400 mb-6 uppercase tracking-tighter animate-pulse">🛸 EL GANCHO TE ESPERA</h1>
-          <p className="text-indigo-200 font-bold mb-8">¡Ooohhh! Has sido elegido para explorar los rincones más profundos del universo.</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-indigo-900/50 p-6 rounded-2xl border-2 border-green-400/30 flex flex-col items-center hover:scale-105 transition cursor-pointer">
-              <span className="text-5xl mb-3">👽</span>
-              <p className="text-green-400 font-black text-xs uppercase">Secretos</p>
-            </div>
-            <div className="bg-indigo-900/50 p-6 rounded-2xl border-2 border-green-400/30 flex flex-col items-center hover:scale-105 transition cursor-pointer">
-              <span className="text-5xl mb-3">🍕</span>
-              <p className="text-green-400 font-black text-xs uppercase">Antojos</p>
-            </div>
-            <div className="bg-indigo-900/50 p-6 rounded-2xl border-2 border-green-400/30 flex flex-col items-center hover:scale-105 transition cursor-pointer">
-              <span className="text-5xl mb-3">✨</span>
-              <p className="text-green-400 font-black text-xs uppercase">Destinos</p>
-            </div>
-          </div>
-        </div>
+    <RoomWrapper 
+      theme="aliens" 
+      fullWallpaper={true} 
+      wallpaperContent={<AlienSpaceBg />}
+    >
+      <div className="p-10 pt-44 relative z-10">
+        {/* Contenido vacío según solicitud */}
       </div>
     </RoomWrapper>
   );

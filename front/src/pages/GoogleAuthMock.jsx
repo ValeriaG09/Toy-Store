@@ -28,7 +28,7 @@ export default function GoogleAuthMock() {
     // Simular retraso de red para ver la animación
     setTimeout(async () => {
       try {
-        const res = await fetch("http://127.0.0.1:5000/auth/google-mock", {
+        const res = await fetch("/auth/google-mock", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -73,12 +73,12 @@ export default function GoogleAuthMock() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center font-sans p-4">
       <div className="bg-white pt-10 pb-8 px-8 rounded-lg shadow-sm w-full max-w-[450px] border border-gray-200 relative overflow-hidden">
         
-        {/* Barra de carga mejorada */}
+        {/* Barra de carga unificada */}
         {paso === 2 && (
-          <div className="google-loader-container">
-            <div className="google-loader-bar-secondary"></div>
-            <div className="google-loader-bar-primary"></div>
-          </div>
+          <>
+            <div className="top-loading-bar"></div>
+            <div className="loader-overlay-minimal"></div>
+          </>
         )}
 
         <div className="flex flex-col items-center mb-8 animate-step-in">

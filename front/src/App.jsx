@@ -8,12 +8,14 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/resetpassword";
 import GoogleAuthMock from "./pages/GoogleAuthMock";
 import GoogleLoginMock from "./pages/GoogleLoginMock";
-import Home from "./pages/Home";
 import Tienda from "./pages/Tienda";
 import Contacto from "./pages/Contacto";
 import Guia from "./pages/Guia";
 import Explora from "./pages/Explora";
-import Categoria from "./pages/categoria"; // ← NUEVO
+import Configuracion from "./pages/Configuracion";
+import AdminDashboard from "./pages/AdminDashboard";
+import Vestier from "./pages/Vestier";
+import "./SpaceTheme.css";
 
 function RutaProtegida({ children }) {
   const { usuario, cargandoSesion } = useContext(AuthContext);
@@ -35,22 +37,20 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Inicio />} />
+          <Route path="/inicio" element={<Inicio />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/google-auth-mock" element={<GoogleAuthMock />} />
           <Route path="/google-login-mock" element={<GoogleLoginMock />} />
-          <Route path="/inicio" element={
-            <RutaProtegida><Inicio /></RutaProtegida>
-          }/>
-          <Route path="/categoria/:nombre" element={
-            <RutaProtegida><Categoria /></RutaProtegida>
-          }/>
           <Route path="/tienda" element={<Tienda />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/guia" element={<Guia />} />
           <Route path="/explora" element={<Explora />} />
+          <Route path="/vestier" element={<Vestier />} />
+          <Route path="/configuracion" element={<RutaProtegida><Configuracion /></RutaProtegida>} />
+          <Route path="/admin" element={<RutaProtegida><AdminDashboard /></RutaProtegida>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

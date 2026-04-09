@@ -17,9 +17,9 @@ const setTokenCookie = (res, token) => {
 
 // ─── REGISTRO ───────────────────────────────────────
 const registro = async (req, res) => {
-  const { nombre, email, contrasena, id_rol } = req.body;
+  const { nombre, email, contrasena, fecha_nacimiento, id_rol } = req.body;
 
-  if (!nombre || !email || !contrasena) {
+  if (!nombre || !email || !contrasena || !fecha_nacimiento) {
     return res.status(400).json({ error: 'Todos los campos son obligatorios' });
   }
 
@@ -39,11 +39,11 @@ const registro = async (req, res) => {
     const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
     await db.query(
-      'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
-      [nombre, email, hash, rolFinal]
+      'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
+      [nombre, email, hash, fecha_nacimiento, rolFinal]
     );
 
-    res.status(201).json({ message: '¡Usuario registrado exitosamente! 🎉' });
+    res.status(201).json({ message: '¡Usuario registrado exitosamente!' });
 
   } catch (error) {
     console.error(error);
@@ -85,11 +85,12 @@ const login = async (req, res) => {
     setTokenCookie(res, token);
 
     res.json({
-      message: '¡Bienvenidx a Toy Store! 🧸',
+      message: '¡Bienvenidx a Toy Store!',
       usuario: {
         id: usuario.id_usuario,
         nombre: usuario.nombre,
         email: usuario.email,
+        fecha_nacimiento: usuario.fecha_nacimiento,
         rol: usuario.id_rol
       }
     });
@@ -139,33 +140,46 @@ const forgotPassword = async (req, res) => {
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     await transporter.sendMail({
-      from: `"Toy Store 🧸🫦" <${process.env.EMAIL_USER}>`,
+      from: `"Toy Store" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: '🔑 Recupera tu contraseña - Toy Store',
+      subject: 'Recupera tu contraseña - Toy Store',
       html: `
-        <div style="font-family:Arial; max-width:500px; margin:auto; 
-                    background:#a6d4f2; padding:30px; border-radius:16px;">
-          <h2 style="color:#e30020; text-align:center;">¡Hola ${usuario.nombre}! ❤️💋</h2>
-          <p style="color:#333;">
-            Recibimos una solicitud para restablecer tu contraseña en 
-            <strong>Toy Store</strong>.
-          </p>
-          <div style="text-align:center; margin:30px 0;">
-            <a href="${resetLink}" 
-               style="background:#ffd700; color:#333; padding:14px 28px; 
-                      border-radius:10px; text-decoration:none; 
-                      font-weight:bold; font-size:16px;">
-              🔓 Restablecer contraseña
-            </a>
+        <div style="background-color: #f0f9ff; padding: 40px 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+          <div style="max-width: 550px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #e0f2fe;">
+            <!-- Header Decorativo -->
+            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 40px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; font-weight: 900;">Toy Store</h1>
+              <p style="color: #bae6fd; margin-top: 10px; font-size: 14px; letter-spacing: 1px;">DONDE TUS JUGUETES COBRAN VIDA</p>
+            </div>
+            
+            <!-- Contenido Principal -->
+            <div style="padding: 40px;">
+              <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 24px; font-weight: 700;">¡Hola, ${usuario.nombre}!</h2>
+              <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 30px;">
+                Recibimos una solicitud para restablecer la contraseña de tu cuenta. No te preocupes, estamos aquí para ayudarte a volver a la acción.
+              </p>
+              
+              <div style="text-align: center; margin: 40px 0;">
+                <a href="${resetLink}" 
+                   style="display: inline-block; background-color: #ffd700; color: #1e293b; padding: 18px 36px; border-radius: 16px; text-decoration: none; font-weight: 900; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 0 #b45309, 0 10px 20px rgba(0,0,0,0.1);">
+                  Restablecer Contraseña
+                </a>
+              </div>
+              
+              <div style="background-color: #f8fafc; border-radius: 12px; padding: 20px; margin-top: 30px; border-left: 4px solid #0284c7;">
+                <p style="color: #64748b; font-size: 13px; margin: 0;">
+                  <strong>Nota de seguridad:</strong> Este enlace expirará en 1 hora por tu protección. Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.
+                </p>
+              </div>
+            </div>
+            
+            <!-- Footer -->
+            <div style="padding: 30px; text-align: center; background-color: #f1f5f9; border-top: 1px solid #e2e8f0;">
+              <p style="color: #94a3b8; font-size: 12px; margin: 0; letter-spacing: 0.5px;">
+                © 2026 Toy Store. Todos los derechos reservados.
+              </p>
+            </div>
           </div>
-          <p style="color:#555; font-size:14px;">
-            ⏰ Este enlace expira en <strong>1 hora</strong>.<br/>
-            Si no solicitaste esto, ignora este mensaje.
-          </p>
-          <hr style="border:none; border-top:1px solid #ccc; margin:20px 0;"/>
-          <p style="color:#888; font-size:12px; text-align:center;">
-            © 2026 Toy Store — Donde tus juguetes sí cobran vida 🌟
-          </p>
         </div>
       `
     });
@@ -215,7 +229,7 @@ const resetPassword = async (req, res) => {
       [hash, usuario.id_usuario]
     );
 
-    res.json({ message: '¡Contraseña actualizada exitosamente! 🎉' });
+    res.json({ message: '¡Contraseña actualizada exitosamente!' });
 
   } catch (error) {
     console.error(error);
@@ -242,17 +256,18 @@ const googleMock = async (req, res) => {
     if (rows.length === 0) {
       // Si no existe, lo creamos
       const mockPass = await bcrypt.hash('google_mock_pass_123', 10);
+      
       // DETERMINAR ROL AUTOMÁTICAMENTE
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
-      const [result] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
-        [nombre || 'Usuario Google', email, mockPass, rolFinal]
+      const [resultRows] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
+        [nombre || 'Usuario Google', email, mockPass, '2000-01-01', rolFinal]
       );
       
       const [newRows] = await db.query(
-        'SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]
+        'SELECT * FROM usuarios WHERE id_usuario = ?', [resultRows.insertId]
       );
       usuario = newRows[0];
     } else {
@@ -269,11 +284,12 @@ const googleMock = async (req, res) => {
     setTokenCookie(res, token);
 
     res.json({
-      message: '¡Bienvenidx con Google! 🧸',
+      message: '¡Bienvenidx con Google!',
       usuario: {
         id: usuario.id_usuario,
         nombre: usuario.nombre,
         email: usuario.email,
+        fecha_nacimiento: usuario.fecha_nacimiento,
         rol: usuario.id_rol
       }
     });
@@ -321,7 +337,7 @@ const sendGoogleVerification = async (req, res) => {
 
 // ─── VERIFY GOOGLE MOCK ──────────────────────────────
 const verifyGoogleMock = async (req, res) => {
-  const { email, nombre, codigo } = req.body;
+  const { email, nombre, codigo, contrasena } = req.body;
   const stored = googleCodes.get(email);
 
   if (!stored || stored.codigo !== codigo || stored.expiry < Date.now()) {
@@ -334,20 +350,28 @@ const verifyGoogleMock = async (req, res) => {
     let usuario;
 
     if (rows.length === 0) {
-      const hash = await bcrypt.hash('google_mock_pass_' + Date.now(), 10);
-      const nombreFinal = nombre || email.split('@')[0]; // Usar parte del email si no hay nombre
+      // Usar la contraseña que el usuario escribió en el Mock de Google, o generar una si no hay
+      const passwordToHash = contrasena || ('google_mock_pass_' + Date.now());
+      const hash = await bcrypt.hash(passwordToHash, 10);
+      const nombreFinal = nombre || email.split('@')[0]; 
       
       // DETERMINAR ROL AUTOMÁTICAMENTE
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
-      const [result] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, id_rol) VALUES (?, ?, ?, ?)',
-        [nombreFinal, email, hash, rolFinal]
+      const [resultRows] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
+        [nombreFinal, email, hash, '2000-01-01', rolFinal]
       );
-      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]);
+      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [resultRows.insertId]);
       usuario = newRows[0];
     } else {
+      // Si el usuario ya existe y nos mandó la contraseña por el mock, se la actualizamos 
+      // para que su contraseña estándar coincida con la que acaba de usar en el mock.
+      if (contrasena) {
+        const hash = await bcrypt.hash(contrasena, 10);
+        await db.query('UPDATE usuarios SET contrasena = ? WHERE email = ?', [hash, email]);
+      }
       usuario = rows[0];
     }
 
@@ -362,7 +386,13 @@ const verifyGoogleMock = async (req, res) => {
     setTokenCookie(res, token);
 
     res.json({
-      usuario: { id: usuario.id_usuario, nombre: usuario.nombre, email: usuario.email, rol: usuario.id_rol }
+      usuario: { 
+        id: usuario.id_usuario, 
+        nombre: usuario.nombre, 
+        email: usuario.email, 
+        fecha_nacimiento: usuario.fecha_nacimiento,
+        rol: usuario.id_rol 
+      }
     });
   } catch (error) {
     res.status(500).json({ error: 'Error en registro' });
@@ -376,10 +406,18 @@ const getMe = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const [rows] = await db.query('SELECT id_usuario, nombre, email, id_rol FROM usuarios WHERE id_usuario = ?', [decoded.id]);
+    const [rows] = await db.query('SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol FROM usuarios WHERE id_usuario = ?', [decoded.id]);
     if (rows.length === 0) return res.json({ usuario: null, message: 'Usuario no encontrado' });
     
-    res.json({ usuario: { id: rows[0].id_usuario, nombre: rows[0].nombre, email: rows[0].email, rol: rows[0].id_rol } });
+    res.json({ 
+      usuario: { 
+        id: rows[0].id_usuario, 
+        nombre: rows[0].nombre, 
+        email: rows[0].email, 
+        fecha_nacimiento: rows[0].fecha_nacimiento,
+        rol: rows[0].id_rol 
+      } 
+    });
   } catch (err) {
     // Retornamos 200 con usuario null para evitar el log de error de red nativo del navegador
     res.json({ usuario: null, message: 'Sesión inválida o expirada' });

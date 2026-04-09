@@ -20,7 +20,7 @@ const FondoToyStory = ({ children }) => {
   const vulva = "/images/custom_vulva.svg?v=5";
 
   return (
-    <div className="toy-story-bg min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#87CEEB]">
+    <div className="font-['Comfortaa',_sans-serif] md:font-['Fredoka',_sans-serif] toy-story-bg min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#87CEEB]">
       {/* Nubes Especiales Transparentes (Archivos Gráficos Originales) */}
       <div className="absolute inset-0 z-0">
         

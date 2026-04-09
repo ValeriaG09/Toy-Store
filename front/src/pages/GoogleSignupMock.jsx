@@ -37,7 +37,7 @@ export default function GoogleSignupMock() {
       
       setCargando(true);
       try {
-        const res = await fetch("http://127.0.0.1:5000/auth/google-send-code", {
+        const res = await fetch("/auth/google-send-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -57,7 +57,7 @@ export default function GoogleSignupMock() {
     if (!form.codigo) return setError("Introduce el código");
     setCargando(true);
     try {
-      const res = await fetch("http://127.0.0.1:5000/auth/google-register", {
+      const res = await fetch("/auth/google-register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -126,6 +126,7 @@ export default function GoogleSignupMock() {
                 type="text" name="nombre" placeholder="Nombre" 
                 value={form.nombre} onChange={handleChange}
                 onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
+                autoFocus
                 className="w-full border border-gray-300 rounded-md p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
               <input 
@@ -143,6 +144,7 @@ export default function GoogleSignupMock() {
                 type="email" name="email" placeholder="Email (ej. mariana@gmail.com)" 
                 value={form.email} onChange={handleChange}
                 onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
+                autoFocus
                 className="w-full border border-gray-300 rounded-md p-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
               <input 
@@ -162,6 +164,7 @@ export default function GoogleSignupMock() {
                 type="text" name="codigo" placeholder="Introduce el código" 
                 value={form.codigo} onChange={handleChange} maxLength="6"
                 onKeyDown={(e) => e.key === 'Enter' && confirmarRegistro()}
+                autoFocus
                 className="w-full border border-gray-300 rounded-md p-3 text-center text-2xl tracking-[10px] focus:border-blue-500 outline-none"
               />
             </div>

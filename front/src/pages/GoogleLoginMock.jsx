@@ -39,7 +39,7 @@ export default function GoogleLoginMock() {
       
       setCargando(true);
       try {
-        const res = await fetch("http://127.0.0.1:5000/auth/google-send-code", {
+        const res = await fetch("/auth/google-send-code", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -69,13 +69,14 @@ export default function GoogleLoginMock() {
     if (!form.codigo) return setError("Introduce el código de verificación");
     setCargando(true);
     try {
-      const res = await fetch("http://127.0.0.1:5000/auth/google-register", {
+      const res = await fetch("/auth/google-register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ 
           email: form.email, 
-          codigo: form.codigo
+          codigo: form.codigo,
+          contrasena: form.contrasena
         }),
       });
       const data = await res.json();
@@ -95,9 +96,12 @@ export default function GoogleLoginMock() {
         }
         
         const savedPasswords = JSON.parse(localStorage.getItem("mock_saved_passwords") || "{}");
-        if (!savedPasswords[data.usuario.email]) {
+        const currentSavedPass = savedPasswords[data.usuario.email];
+        
+        // Mostrar prompt si no está guardada o si la contraseña ingresada es diferente a la guardada
+        if (!currentSavedPass || currentSavedPass !== form.contrasena) {
           localStorage.setItem("pending_save_email", data.usuario.email);
-          localStorage.setItem("pending_save_pass", "google-oauth-mock");
+          localStorage.setItem("pending_save_pass", form.contrasena || "google-oauth-mock");
           localStorage.setItem("show_save_pass_prompt", "true");
         }
 
@@ -160,6 +164,7 @@ export default function GoogleLoginMock() {
                 value={form.email}
                 onChange={handleChange}
                 onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
+                autoFocus
                 className="w-full text-base py-3 px-3 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
               />
               </div>
@@ -177,6 +182,7 @@ export default function GoogleLoginMock() {
                 value={form.contrasena}
                 onChange={handleChange}
                 onKeyDown={(e) => e.key === 'Enter' && siguientePaso()}
+                autoFocus
                 className="w-full text-base py-3 px-3 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
               />
               <p className="text-sm text-blue-600 font-medium cursor-pointer hover:underline">¿Has olvidado tu contraseña?</p>
@@ -191,6 +197,8 @@ export default function GoogleLoginMock() {
               <input 
                 type="text" name="codigo" placeholder="G- Codigo" 
                 value={form.codigo} onChange={handleChange} maxLength="6"
+                onKeyDown={(e) => e.key === 'Enter' && confirmarLogin()}
+                autoFocus
                 className="w-full border border-gray-300 rounded-md p-4 text-center text-2xl tracking-[8px] font-semibold focus:border-blue-500 outline-none"
               />
             </div>

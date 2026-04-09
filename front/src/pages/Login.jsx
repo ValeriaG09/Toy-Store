@@ -57,7 +57,7 @@ export default function Login() {
     setCargando(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/auth/login", {
+      const res = await fetch("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // Importante para que el backend envíe y lea la cookie
@@ -99,10 +99,18 @@ export default function Login() {
 
   return (
     <FondoToyStory>
+      {/* --- BARRA DE CARGA PROFESIONAL --- */}
+      {cargando && (
+        <>
+          <div className="top-loading-bar"></div>
+          <div className="loader-overlay-minimal"></div>
+        </>
+      )}
+
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
 
         {/* Logo de Toy Story */}
-        <ToyStoreLogo />
+        <ToyStoreLogo variant="new" scale={0.7} />
 
         <h2 className="text-xl font-bold text-gray-700 mb-6 border-b border-gray-100 pb-2">
           Iniciar sesión

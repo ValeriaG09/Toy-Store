@@ -10,6 +10,7 @@ export default function Registro() {
   const [form, setForm] = useState({
     nombre: "",
     email: "",
+    fecha_nacimiento: "",
     contrasena: "",
     confirmar: ""
   });
@@ -38,6 +39,22 @@ export default function Registro() {
     if (!/\S+@\S+\.\S+/.test(form.email)) {
       return setError("El formato del correo no es válido");
     }
+    if (!form.fecha_nacimiento) {
+      return setError("Necesitamos saber tu fecha de nacimiento");
+    }
+
+    // Validar mayoría de edad (18+)
+    const hoy = new Date();
+    const cumple = new Date(form.fecha_nacimiento);
+    let edad = hoy.getFullYear() - cumple.getFullYear();
+    const m = hoy.getMonth() - cumple.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < cumple.getDate())) {
+      edad--;
+    }
+    if (edad < 18) {
+      return setError("Lo sentimos, debes ser mayor de 18 años para entrar al baúl.");
+    }
+
     if (form.contrasena.length < 8) {
       return setError("La contraseña debe tener al menos 8 caracteres");
     }
@@ -48,12 +65,13 @@ export default function Registro() {
     setCargando(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/auth/registro", {
+      const res = await fetch("/auth/registro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombre: form.nombre,
           email: form.email,
+          fecha_nacimiento: form.fecha_nacimiento,
           contrasena: form.contrasena
         }),
       });
@@ -77,7 +95,7 @@ export default function Registro() {
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
 
         {/* Logo de Toy Story */}
-        <ToyStoreLogo />
+        <ToyStoreLogo variant="new" scale={0.7} />
 
         <h2 className="text-xl font-bold text-gray-700 mb-6 border-b border-gray-100 pb-2">
           Crear cuenta
@@ -112,6 +130,18 @@ export default function Registro() {
             onChange={handleChange}
             className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
                        focus:outline-none focus:border-yellow-400 transition"
+          />
+
+          <label className="text-sm font-semibold text-gray-600">
+            Fecha de Nacimiento
+          </label>
+          <input
+            type="date"
+            name="fecha_nacimiento"
+            value={form.fecha_nacimiento}
+            onChange={handleChange}
+            className="w-full border-2 border-sky-300 rounded-xl p-3 mt-1 mb-4
+                       focus:outline-none focus:border-yellow-400 transition text-gray-600 font-medium"
           />
 
           <label className="text-sm font-semibold text-gray-600">
