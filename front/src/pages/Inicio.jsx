@@ -5,8 +5,6 @@ import { AuthContext } from "../context/AuthContext";
 import WoodyBuzzImg from "../assets/woody_buzz_nobg.png";
 import ToyStoreLogo from "../components/ToyStoreLogo";
 import RoomWrapper from "../components/RoomWrapper";
-import ProductSidebar from "../components/ProductSidebar";
-import PurposeSidebar from "../components/PurposeSidebar";
 
 const ToyPlane = () => {
   const [waiting, setWaiting] = useState(false);
@@ -90,8 +88,6 @@ export default function Inicio() {
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
   // Control de vista (solo para admins)
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [showFilterSidebar, setShowFilterSidebar] = useState(false);
-  const [showPurposeSidebar, setShowPurposeSidebar] = useState(false);
 
   // --- SEGURIDAD: VERIFICACIÓN DE EDAD ---
   const [verificationStage, setVerificationStage] = useState('initial'); // 'initial', 'proof', 'rejected'
@@ -163,7 +159,7 @@ export default function Inicio() {
     const active = content[activeInfo];
 
     return (
-      <div className="fixed inset-0 z-[600] flex items-center justify-center p-4 md:p-10 bg-black/70 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
+      <div className="fixed inset-0 z-[3000] flex items-center justify-center p-4 md:p-10 bg-black/70 backdrop-blur-md animate-in fade-in duration-300 overflow-y-auto">
         <div className="bg-white rounded-[2rem] shadow-[0_30px_70px_rgba(0,0,0,0.5)] max-w-2xl w-full relative p-8 md:p-16 border-8 border-sky-400 animate-in zoom-in-95 duration-300 my-auto">
           <button
             onClick={() => setIsInfoOpen(false)}
@@ -436,15 +432,10 @@ export default function Inicio() {
       <RoomWrapper
         theme="andy"
         wallpaperContent={wallpaperAndy}
-        isBlurred={(!ageVerifiedGlobal && !usuario) || showLoginPrompt || showFilterSidebar || showPurposeSidebar || cerrandoSesion}
+        isBlurred={(!ageVerifiedGlobal && !usuario) || showLoginPrompt || cerrandoSesion}
         showFooter={true}
-        onHeartClick={() => { if(usuario) setShowFilterSidebar(true); }}
-        onStarClick={() => setShowPurposeSidebar(true)}
       >
-        <InfoOverlay />
         <SavePasswordPrompt />
-
-
         {/* --- CONTENIDO PRINCIPAL (DESENFOCADO SI NO SE HA VERIFICADO) --- */}
         <div className={`flex flex-col flex-1 transition-all duration-1000 ${(!ageVerifiedGlobal && !usuario && !isLoggedInHint) ? 'blur-2xl pointer-events-none scale-110 grayscale' : 'blur-0 opacity-100 scale-100 grayscale-0'}`}>
 
@@ -516,19 +507,9 @@ export default function Inicio() {
             </div>
           )}
 
-          {/* Sidebar Hamm */}
-          <ProductSidebar
-            isOpen={showFilterSidebar}
-            onClose={() => setShowFilterSidebar(false)}
-          />
-
-          {/* Sidebar Bunny & Ducky */}
-          <PurposeSidebar
-            isOpen={showPurposeSidebar}
-            onClose={() => setShowPurposeSidebar(false)}
-          />
         </div>
       </RoomWrapper>
+      <InfoOverlay />
     </>
   );
 }

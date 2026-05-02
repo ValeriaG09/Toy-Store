@@ -3,7 +3,10 @@ const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 const transporter = require('../config/mailer');
+const { OAuth2Client } = require('google-auth-library');
 require('dotenv').config();
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Helper para crear la cookie
 const setTokenCookie = (res, token) => {
@@ -237,16 +240,35 @@ const resetPassword = async (req, res) => {
   }
 };
 
-// ─── GOOGLE MOCK ────────────────────────────────────
-const googleMock = async (req, res) => {
-  const { email, nombre } = req.body;
+// ─── GOOGLE LOGIN REAL ──────────────────────────────
+const googleLogin = async (req, res) => {
+  const { credential, isAccessToken, userInfo } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: 'Email es obligatorio' });
+  if (!credential && !userInfo) {
+    return res.status(400).json({ error: 'Token de Google o información de usuario requerida' });
   }
 
   try {
-    // Buscar si el usuario ya existe
+    let email, name, picture;
+
+    if (isAccessToken && userInfo) {
+      // Si ya viene verificado del frontend (flujo useGoogleLogin)
+      email = userInfo.email;
+      name = userInfo.name;
+      picture = userInfo.picture;
+    } else {
+      // Verificación estándar de ID Token
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+      const payload = ticket.getPayload();
+      email = payload.email;
+      name = payload.name;
+      picture = payload.picture;
+    }
+
+    // 2. Buscar si el usuario ya existe
     let [rows] = await db.query(
       'SELECT * FROM usuarios WHERE email = ?', [email]
     );
@@ -254,16 +276,17 @@ const googleMock = async (req, res) => {
     let usuario;
 
     if (rows.length === 0) {
-      // Si no existe, lo creamos
-      const mockPass = await bcrypt.hash('google_mock_pass_123', 10);
+      // 3. Si no existe, lo creamos (Registro automático)
+      // Generamos una contraseña aleatoria muy larga (no la usará pero la DB la pide)
+      const randomPass = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
       
-      // DETERMINAR ROL AUTOMÁTICAMENTE
+      // DETERMINAR ROL (Admin si está en la lista blanca de .env)
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
       const [resultRows] = await db.query(
         'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
-        [nombre || 'Usuario Google', email, mockPass, '2000-01-01', rolFinal]
+        [name, email, randomPass, '2000-01-01', rolFinal]
       );
       
       const [newRows] = await db.query(
@@ -274,7 +297,7 @@ const googleMock = async (req, res) => {
       usuario = rows[0];
     }
 
-    // Generar token JWT
+    // 4. Generar nuestro propio token JWT de Toy Store
     const token = jwt.sign(
       { id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol },
       process.env.JWT_SECRET,
@@ -289,14 +312,14 @@ const googleMock = async (req, res) => {
         id: usuario.id_usuario,
         nombre: usuario.nombre,
         email: usuario.email,
-        fecha_nacimiento: usuario.fecha_nacimiento,
-        rol: usuario.id_rol
+        rol: usuario.id_rol,
+        foto: picture
       }
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error interno del servidor en Google Mock' });
+    console.error('Error en Google Login:', error);
+    res.status(401).json({ error: 'Token de Google inválido o expirado' });
   }
 };
 
@@ -429,4 +452,4 @@ const logout = (req, res) => {
   res.json({ message: 'Sesión cerrada exitosamente' });
 };
 
-module.exports = { registro, login, forgotPassword, resetPassword, googleMock, sendGoogleVerification, verifyGoogleMock, getMe, logout };
+module.exports = { registro, login, forgotPassword, resetPassword, googleLogin, sendGoogleVerification, verifyGoogleMock, getMe, logout };

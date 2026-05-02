@@ -31,14 +31,14 @@ const ProductSidebar = ({ isOpen, onClose }) => {
     <>
       {/* Backdrop Global (Más transparente para notar lo de atrás) */}
       <div 
-        className="fixed inset-0 z-[998] bg-white/20 backdrop-blur-[6px] animate-in fade-in duration-700" 
+        className="absolute inset-0 z-[11000] bg-white/20 backdrop-blur-[6px] animate-in fade-in duration-700 min-h-full" 
         onClick={onClose}
       ></div>
       
       {/* Drawer Hamm - Maqueta Alcancía (Z-index superior al backdrop) */}
-      <div className="fixed top-0 left-0 h-full w-full lg:w-[85%] max-w-[1100px] z-[999] flex animate-piggy-bounce">
+      <div className="absolute top-0 left-0 h-auto min-h-screen w-full lg:w-[85%] max-w-[1100px] z-[12000] flex animate-piggy-bounce">
         
-        <div className="h-full w-full bg-[#fce4ec] border-r-[12px] border-white shadow-[30px_0_70px_rgba(240,98,146,0.15)] flex flex-col relative overflow-hidden rounded-r-[120px]">
+        <div className="min-h-screen h-auto w-full bg-[#fce4ec] border-r-[12px] border-white shadow-[30px_0_70px_rgba(240,98,146,0.15)] flex flex-col relative overflow-hidden rounded-r-[120px]">
            
            {/* Ranura de Moneda (Decorativa Superior) */}
            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-4 bg-[#f06292] rounded-b-full shadow-inner opacity-20"></div>
@@ -62,10 +62,10 @@ const ProductSidebar = ({ isOpen, onClose }) => {
               </button>
            </div>
 
-           <div className="flex-1 flex flex-col md:flex-row overflow-hidden h-full">
+           <div className="flex-1 flex flex-col md:flex-row h-auto">
               
               {/* FILTROS (Columna Hamm) */}
-              <aside className="w-full md:w-[350px] bg-white/50 p-10 overflow-y-auto border-r-8 border-white/50 custom-scrollbar z-10">
+              <aside className="w-full md:w-[350px] bg-white/50 p-10 border-r-8 border-white/50 z-10 h-auto">
                  <h3 className="text-[11px] font-[1000] text-[#ad1457] uppercase tracking-[6px] mb-10 opacity-40">Configuración</h3>
 
                  {/* Precio Slider - Estilo Hamm */}

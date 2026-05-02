@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import FondoToyStory from "../components/FondoToyStory";
 import ToyStoreLogo from "../components/ToyStoreLogo";
 import { AuthContext } from "../context/AuthContext";
+import { useGoogleLogin } from "@react-oauth/google";
 
 export default function Login() {
   const { usuario, login, cargandoSesion } = useContext(AuthContext);
@@ -10,6 +11,72 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", contrasena: "" });
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+
+  // Lógica de Login Real con Google (Hook Personalizado)
+  const googleLoginHandler = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setError("");
+      setCargando(true);
+      try {
+        // Obtenemos la info del usuario desde Google usando el access_token
+        const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        const userInfo = await userInfoRes.json();
+
+        // Enviamos la info a nuestro backend para crear/loguear
+        const res = await fetch("/auth/google-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            credential: tokenResponse.access_token, // En este flujo usamos el access_token
+            isAccessToken: true,
+            userInfo: userInfo 
+          }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          login(data.usuario);
+          navigate("/inicio", { replace: true });
+        } else {
+          setError(data.error);
+        }
+      } catch (err) {
+        console.error("Google login error:", err);
+        setError("Error al conectar con Google");
+      } finally {
+        setCargando(false);
+      }
+    },
+    onError: () => setError("Error en la autenticación de Google"),
+  });
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    setCargando(true);
+    try {
+      const res = await fetch("/auth/google-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        login(data.usuario);
+        navigate("/inicio", { replace: true });
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      console.error("Google login error:", err);
+      setError("Error al conectar con Google");
+    } finally {
+      setCargando(false);
+    }
+  };
 
   // Auto-login si ya existe una sesión activa y global
   useEffect(() => {
@@ -169,19 +236,21 @@ export default function Login() {
             {cargando ? "Entrando..." : "Entrar"}
           </button>
 
-          {/* Google Button Simulator */}
+          {/* Botón de Google Estilo Amarillo */}
           <button
             type="button"
-            className="w-full bg-white border-2 border-gray-200 hover:bg-gray-50 text-gray-600
-                       font-semibold py-3 rounded-xl transition text-sm flex items-center justify-center gap-2 shadow-sm"
-            onClick={() => navigate("/google-auth-mock")}
+            onClick={() => googleLoginHandler()}
+            disabled={cargando}
+            className="w-full bg-white border-2 border-gray-200 hover:bg-gray-50 text-gray-700
+                       py-3 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-md
+                       active:translate-y-1 active:shadow-sm"
           >
             <img 
               src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" 
               alt="Google" 
               className="w-5 h-5"
             />
-            Continue with Google
+            Continuar con Google
           </button>
         </form>
 

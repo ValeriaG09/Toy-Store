@@ -3,6 +3,10 @@ import PixarBall from './PixarBall';
 import ToyBlocks from './ToyBlocks';
 import Navbar from './Navbar';
 import LotsoFurImg from '../assets/lotso_fur_texture.png';
+import ProductSidebar from './ProductSidebar';
+import PurposeSidebar from './PurposeSidebar';
+import { AuthContext } from '../context/AuthContext';
+import { useContext, useState } from 'react';
 
 /**
  * RoomWrapper: Provee la estructura de "Maqueta" (Diorama 3D)
@@ -19,6 +23,26 @@ export default function RoomWrapper({
   onHeartClick,
   onStarClick
 }) {
+  const { usuario } = useContext(AuthContext);
+  const [showFilterSidebar, setShowFilterSidebar] = useState(false);
+  const [showPurposeSidebar, setShowPurposeSidebar] = useState(false);
+
+  // Sobrescribimos los clics para que activen las sidebars globales
+  const handleHeartClick = () => {
+    if (onHeartClick) {
+      onHeartClick(); // Ejecutamos la lógica original por si acaso (e.j. analytics)
+    }
+    if (usuario) {
+      setShowFilterSidebar(true);
+    }
+  };
+
+  const handleStarClick = () => {
+    if (onStarClick) {
+      onStarClick();
+    }
+    setShowPurposeSidebar(true);
+  };
   
   const getThemeStyles = () => {
     switch (theme) {
@@ -61,6 +85,7 @@ export default function RoomWrapper({
   };
 
   const styles = getThemeStyles();
+  const activeBlur = isBlurred || showFilterSidebar || showPurposeSidebar;
 
   return (
     <div className="min-h-screen relative flex flex-col overflow-hidden">
@@ -81,7 +106,7 @@ export default function RoomWrapper({
       DIFERENTES PANTALLAS Y LOS ELEMENTOS SE SUPERPONDRÁN.
       ========================================================================
       */}
-      <div className={`absolute inset-0 z-0 transition-all duration-700 ${isBlurred ? 'blur-[6px]' : ''} pointer-events-none`}>
+      <div className={`absolute inset-0 z-0 transition-all duration-700 ${activeBlur ? 'blur-[6px]' : ''} pointer-events-none`}>
         {fullWallpaper && wallpaperContent ? (
           /* MODO FONDO COMPLETO (E.j. Tienda Woody) */
           <div className="absolute inset-0 z-0">
@@ -142,18 +167,28 @@ export default function RoomWrapper({
       <div className="relative z-10 flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden">
         
         {/* NAVBAR GLOBAL INTEGRADA (Solo aparece si no es vistaAdmin, ya que admin tiene su propia Nav) */}
-        <Navbar onHeartClick={onHeartClick} onStarClick={onStarClick} />
+        <Navbar onHeartClick={handleHeartClick} onStarClick={handleStarClick} />
 
         <div className="flex-1 shrink-0 relative flex flex-col">
            {children}
         </div>
+
+        {/* 🛑 SIDEBARS GLOBALES (Ahora dentro del scroll principal) 🛑 */}
+        <ProductSidebar 
+          isOpen={showFilterSidebar} 
+          onClose={() => setShowFilterSidebar(false)} 
+        />
+        <PurposeSidebar 
+          isOpen={showPurposeSidebar} 
+          onClose={() => setShowPurposeSidebar(false)} 
+        />
         
         {/* Espaciador para no tapar el suelo */}
         {showFooter && <div className="h-[25vh]"></div>}
 
         {/* FOOTER TEXTUAL PURO */}
         {showFooter && (
-          <footer className={`w-full mt-auto px-6 py-12 md:px-12 pt-20 pb-16 relative z-20 text-white/90 min-h-[480px] md:min-h-[40vh] flex flex-col justify-end transition-all duration-700 shrink-0 ${isBlurred ? 'blur-[6px]' : ''} pointer-events-none`}>
+          <footer className={`w-full mt-auto px-6 py-12 md:px-12 pt-20 pb-16 relative z-20 text-white/90 min-h-[480px] md:min-h-[40vh] flex flex-col justify-end transition-all duration-700 shrink-0 ${activeBlur ? 'blur-[6px]' : ''} pointer-events-none`}>
              <div className="relative z-10 max-w-7xl mx-auto w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-white/10 pb-12 mb-8 pointer-events-auto">
                 
                 {/* Columna 1: Contacto y Redes */}

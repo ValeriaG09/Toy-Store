@@ -33,6 +33,17 @@ export default function Navbar({ onHeartClick, onStarClick }) {
       {/* Fondo de Nube SVG */}
       <div className="absolute top-0 left-0 w-full h-[160px] md:h-[200px] z-0 pointer-events-auto">
         <svg viewBox="0 0 1000 150" preserveAspectRatio="none" className="w-full h-full" style={{ filter: 'drop-shadow(0px 8px 12px rgba(0,0,0,0.08))' }}>
+          <defs>
+            <filter id="cloudBorderUser" x="-10%" y="-10%" width="120%" height="120%">
+              <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="DILATED" />
+              <feFlood floodColor="#0284c7" />
+              <feComposite in2="DILATED" operator="in" />
+              <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
           <path fill="#ffffff" d="M0 0 v 60 Q 100 150 200 60 Q 300 150 400 60 Q 500 150 600 60 Q 700 150 800 60 Q 900 150 1000 60 v -60 z" />
         </svg>
       </div>
@@ -139,15 +150,7 @@ export default function Navbar({ onHeartClick, onStarClick }) {
                           <div className="absolute inset-0 z-[-1] flex justify-center items-center w-full h-[110%]">
                             <svg viewBox="0 0 240 180" className="w-[110%] h-full overflow-visible">
                               <defs>
-                                <filter id="cloudBorderUser" x="-10%" y="-10%" width="120%" height="120%">
-                                  <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="DILATED" />
-                                  <feFlood floodColor="#0284c7" />
-                                  <feComposite in2="DILATED" operator="in" />
-                                  <feMerge>
-                                    <feMergeNode />
-                                    <feMergeNode in="SourceGraphic" />
-                                  </feMerge>
-                                </filter>
+                                {/* Filtro ya definido globalmente en el fondo de la Navbar */}
                               </defs>
                               <g filter="url(#cloudBorderUser)" fill="white">
                                 <rect x="30" y="50" width="180" height="100" rx="40" />
@@ -225,10 +228,67 @@ export default function Navbar({ onHeartClick, onStarClick }) {
                       </div>
                     </div>
                   ) : (
-                    <div className="dropdown-container absolute right-2 top-[85px] w-[200px] z-[110] animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-none">
-                      <div className="relative pointer-events-auto bg-white rounded-2xl shadow-xl border-2 border-slate-100 p-2 flex flex-col gap-1">
-                        <button onClick={() => { setDropdownAbierto(false); navigate('/login'); }} className="w-full text-left px-4 py-2 text-[10px] font-black text-blue-900 uppercase tracking-widest hover:bg-blue-50 rounded-lg transition-colors">Iniciar Sesión</button>
-                        <button onClick={() => { setDropdownAbierto(false); navigate('/registro'); }} className="w-full text-left px-4 py-2 text-[10px] font-black text-blue-900 uppercase tracking-widest hover:bg-blue-50 rounded-lg transition-colors border-t border-slate-50">Registrarse</button>
+                    <div className="dropdown-container absolute right-2 top-[85px] w-[280px] z-[110] animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-none">
+                      <style>{`
+                        @keyframes float-cloud-guest {
+                          0%, 100% { transform: translateY(0px) rotate(0deg); }
+                          50% { transform: translateY(-4px) rotate(-1deg); }
+                        }
+                        .animate-float-cloud-guest { animation: float-cloud-guest 4s ease-in-out infinite; }
+                      `}</style>
+                      
+                      <div className="relative animate-float-cloud-guest pointer-events-auto">
+                        <div className="absolute -top-[18px] right-[45px] w-[18px] h-[18px] bg-white rounded-full drop-shadow-sm border-[1.5px] border-[#0284c7]"></div>
+                        <div className="absolute -top-[38px] right-[30px] w-2.5 h-2.5 bg-white rounded-full drop-shadow-sm border-[1px] border-[#0284c7]"></div>
+                        
+                        <div className="relative drop-shadow-[0_10px_20px_rgba(2,132,199,0.15)] flex justify-center items-center p-2 pt-8 pb-3 min-h-[220px]">
+                          <div className="absolute inset-0 z-[-1] flex justify-center items-center w-full h-[110%]">
+                            <svg viewBox="0 0 240 180" className="w-[110%] h-full overflow-visible">
+                              <g filter="url(#cloudBorderUser)" fill="white">
+                                <rect x="30" y="50" width="180" height="100" rx="40" />
+                                <circle cx="120" cy="40" r="50" />
+                                <circle cx="185" cy="65" r="50" />
+                                <circle cx="55" cy="70" r="45" />
+                                <circle cx="30" cy="115" r="45" />
+                                <circle cx="210" cy="110" r="50" />
+                                <circle cx="85" cy="150" r="45" />
+                                <circle cx="155" cy="150" r="45" />
+                              </g>
+                            </svg>
+                          </div>
+                          
+                          <div className="relative z-10 flex flex-col items-center w-full px-5">
+                            {/* Texto Curvo Idéntico */}
+                            <div className="w-full h-8 mb-4 pointer-events-none">
+                                <svg viewBox="0 0 200 40" className="w-full h-full overflow-visible drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]">
+                                    <path id="curveGuestName" fill="transparent" d="M 15,40 Q 100,-10 185,40" />
+                                    <text width="200" className="text-[17px] font-black fill-[#0369a1] tracking-[1px] uppercase">
+                                        <textPath href="#curveGuestName" startOffset="50%" textAnchor="middle">
+                                            ¡HOLA, INVITADO!
+                                        </textPath>
+                                    </text>
+                                </svg>
+                            </div>
+
+                            <div className="flex flex-col gap-2 w-full max-w-[180px]">
+                                <button
+                                  onClick={() => { setDropdownAbierto(false); navigate('/login'); }}
+                                  className="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-black py-2 px-4 rounded-xl transition-all text-[10px] tracking-widest uppercase flex items-center justify-center gap-2 shadow-md active:scale-95"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                  Iniciar Sesión
+                                </button>
+
+                                <button
+                                  onClick={() => { setDropdownAbierto(false); navigate('/registro'); }}
+                                  className="w-full bg-slate-50 hover:bg-slate-100 text-[#0284c7] font-black py-2 px-4 rounded-xl transition-all text-[10px] tracking-widest uppercase border-2 border-slate-200 flex items-center justify-center gap-2 shadow-sm active:scale-95"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                                  Registrarse
+                                </button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
