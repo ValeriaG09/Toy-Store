@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
+const tryonController = require('../controllers/tryon.controller');
+
+// Ruta para procesar el Virtual Try-On
+router.post('/try-on', tryonController.processTryOn);
 
 // Obtener todos los productos con filtros opcionales
 router.get('/', async (req, res) => {
