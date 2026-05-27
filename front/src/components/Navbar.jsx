@@ -119,7 +119,7 @@ export default function Navbar({ onHeartClick, onStarClick }) {
 
               {(usuario || (cargandoSesion && isLoggedInHint)) ? (
                 <img
-                  src={`https://ui-avatars.com/api/?name=${(usuario ? usuario.nombre : userNameHint).replace(" ", "+")}&background=0284c7&color=fff`}
+                  src={usuario?.avatar_url || usuario?.avatar || `https://ui-avatars.com/api/?name=${(usuario ? usuario.nombre : userNameHint).replace(" ", "+")}&background=0284c7&color=fff`}
                   alt="Avatar"
                   className="w-full h-full object-cover rounded-full"
                 />
