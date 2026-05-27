@@ -22,6 +22,9 @@ export default function ResetPassword() {
     if (nuevaContrasena.length < 8) {
       return setError("La contraseña debe tener al menos 8 caracteres");
     }
+    if (!/[a-zA-Z]/.test(nuevaContrasena) || !/\d/.test(nuevaContrasena) || !/[!@#$%^&*(),.?":{}|<>_\-+=]/.test(nuevaContrasena)) {
+      return setError("La contraseña debe incluir letras, números y caracteres especiales (ej: @, #, $, !) y no puede contener solo letras o solo números");
+    }
 
     setCargando(true);
 
@@ -92,7 +95,11 @@ export default function ResetPassword() {
               type="password"
               placeholder="••••••••"
               value={nuevaContrasena}
-              onChange={(e) => setNuevaContrasena(e.target.value)}
+              onChange={(e) => {
+                let val = e.target.value;
+                if (val.startsWith(" ")) val = val.trimStart();
+                setNuevaContrasena(val);
+              }}
               required
               className="w-full border-2 border-sky-300 rounded-xl p-3 mb-4 
                          focus:outline-none focus:border-yellow-400 transition"
@@ -105,7 +112,11 @@ export default function ResetPassword() {
               type="password"
               placeholder="••••••••"
               value={confirmar}
-              onChange={(e) => setConfirmar(e.target.value)}
+              onChange={(e) => {
+                let val = e.target.value;
+                if (val.startsWith(" ")) val = val.trimStart();
+                setConfirmar(val);
+              }}
               required
               className="w-full border-2 border-sky-300 rounded-xl p-3 mb-6 
                          focus:outline-none focus:border-yellow-400 transition"

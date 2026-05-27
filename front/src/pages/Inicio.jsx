@@ -83,7 +83,12 @@ const ToyPlane = () => {
 };
 
 export default function Inicio() {
-  const { usuario, logout, cargandoSesion, ageVerifiedGlobal, confirmAge, isLoggedInHint, userNameHint, vistaAdmin, setVistaAdmin } = useContext(AuthContext);
+  const auth = useContext(AuthContext);
+  // Desestructuración defensiva para evitar errores si el contexto es undefined
+  const { 
+    usuario, logout, cargandoSesion, ageVerifiedGlobal, 
+    confirmAge, isLoggedInHint, userNameHint, vistaAdmin, setVistaAdmin 
+  } = auth || {};
   const navigate = useNavigate();
   const [cerrandoSesion, setCerrandoSesion] = useState(false);
   // Control de vista (solo para admins)

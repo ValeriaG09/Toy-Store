@@ -5,11 +5,13 @@ require('dotenv').config();
 
 const authRoutes = require('./src/routes/auth.routes');
 const productosRoutes = require('./src/routes/productos.routes');
+const perfilRoutes = require('./src/routes/perfil.routes');
+const pedidosRoutes = require('./src/routes/pedidos.routes');
 
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
+  origin: ["http://localhost:5173", "http://127.0.0.1:5173", "https://toy-store-red-mu.vercel.app"],
   credentials: true
 }));
 app.use(express.json());
@@ -18,6 +20,12 @@ app.use(cookieParser());
 // Rutas
 app.use('/auth', authRoutes);
 app.use('/productos', productosRoutes);
+app.use('/perfil', perfilRoutes);
+app.use('/pedidos', pedidosRoutes);
+
+// Servir archivos estáticos (Subidas)
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Ruta de prueba
 app.get('/', (req, res) => {

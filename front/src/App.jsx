@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useContext } from "react";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import Inicio from "./pages/Inicio";
@@ -15,6 +16,9 @@ import Explora from "./pages/Explora";
 import Configuracion from "./pages/Configuracion";
 import AdminDashboard from "./pages/AdminDashboard";
 import Vestier from "./pages/Vestier";
+import Pagar from "./pages/Pagar";
+import Confirmacion from "./pages/Confirmacion";
+import MisPedidos from "./pages/MisPedidos";
 import "./SpaceTheme.css";
 
 function RutaProtegida({ children }) {
@@ -34,7 +38,8 @@ function RutaProtegida({ children }) {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <CartProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<Inicio />} />
           <Route path="/inicio" element={<Inicio />} />
@@ -51,8 +56,12 @@ export default function App() {
           <Route path="/vestier" element={<Vestier />} />
           <Route path="/configuracion" element={<RutaProtegida><Configuracion /></RutaProtegida>} />
           <Route path="/admin" element={<RutaProtegida><AdminDashboard /></RutaProtegida>} />
+          <Route path="/pagar/:id" element={<RutaProtegida><Pagar /></RutaProtegida>} />
+          <Route path="/confirmacion/:id" element={<RutaProtegida><Confirmacion /></RutaProtegida>} />
+          <Route path="/mis-pedidos" element={<RutaProtegida><MisPedidos /></RutaProtegida>} />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </CartProvider>
     </AuthProvider>
   );
 }

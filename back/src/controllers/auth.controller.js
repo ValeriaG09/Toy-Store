@@ -94,7 +94,9 @@ const login = async (req, res) => {
         nombre: usuario.nombre,
         email: usuario.email,
         fecha_nacimiento: usuario.fecha_nacimiento,
-        rol: usuario.id_rol
+        rol: usuario.id_rol,
+        avatar_url: usuario.avatar_url,
+        preferencias: (usuario.preferencias && usuario.preferencias !== "") ? JSON.parse(usuario.preferencias) : {}
       }
     });
 
@@ -429,7 +431,7 @@ const getMe = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const [rows] = await db.query('SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol FROM usuarios WHERE id_usuario = ?', [decoded.id]);
+    const [rows] = await db.query('SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol, avatar_url, preferencias FROM usuarios WHERE id_usuario = ?', [decoded.id]);
     if (rows.length === 0) return res.json({ usuario: null, message: 'Usuario no encontrado' });
     
     res.json({ 
@@ -438,7 +440,9 @@ const getMe = async (req, res) => {
         nombre: rows[0].nombre, 
         email: rows[0].email, 
         fecha_nacimiento: rows[0].fecha_nacimiento,
-        rol: rows[0].id_rol 
+        rol: rows[0].id_rol,
+        avatar_url: rows[0].avatar_url,
+        preferencias: (rows[0].preferencias && rows[0].preferencias !== "") ? JSON.parse(rows[0].preferencias) : {}
       } 
     });
   } catch (err) {

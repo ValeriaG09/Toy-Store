@@ -24,15 +24,6 @@ pool.getConnection()
     console.error(`   Detalle: ${err.message}`);
   });
 
-// Wrapper opcional para mantener compatibilidad si algunas consultas usaban db.query sin await [rows]
-// Aunque mysql2/promise devuelve [rows, fields] nativamente en pool.query()
-const db = {
-  query: async (text, params) => {
-    // Si la aplicación destructureaba con const [rows] = await db.query(...), esto devolverá directamente un arreglo.
-    return await pool.query(text, params);
-  }
-};
-
-module.exports = db;
-
-module.exports = db;
+// Exportamos el pool directamente, que ya tiene .query() y .getConnection()
+// Esto mantiene compatibilidad total con const [rows] = await db.query(...)
+module.exports = pool;

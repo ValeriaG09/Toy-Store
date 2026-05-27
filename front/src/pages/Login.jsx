@@ -79,11 +79,13 @@ export default function Login() {
   };
 
   // Auto-login si ya existe una sesión activa y global
+  /*
   useEffect(() => {
     if (usuario) {
       navigate('/inicio', { replace: true });
     }
   }, [usuario, navigate]);
+  */
 
   // Autocompletado simulado (Detectar cuando se teclea un email guardado)
   useEffect(() => {
@@ -94,15 +96,23 @@ export default function Login() {
         setForm(prev => ({ ...prev, contrasena: savedPasswords[form.email] }));
       }
       
-      // Simular clic "y lo mande de una vez a la pagina de inicio" para ambos casos
+      // NOTA: Se desactiva el clic automático para permitir usar otra cuenta
+      /*
       setTimeout(() => {
         document.getElementById('btn-login-submit')?.click();
       }, 500);
+      */
     }
   }, [form.email]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+    if (name === "email") {
+      value = value.replace(/\s/g, ""); // Quitar espacios del correo
+    } else if (value.startsWith(" ")) {
+      value = value.trimStart();
+    }
+    setForm({ ...form, [name]: value });
     setError("");
   };
 

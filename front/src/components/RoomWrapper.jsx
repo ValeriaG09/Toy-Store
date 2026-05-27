@@ -6,7 +6,11 @@ import LotsoFurImg from '../assets/lotso_fur_texture.png';
 import ProductSidebar from './ProductSidebar';
 import PurposeSidebar from './PurposeSidebar';
 import { AuthContext } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import CartDrawer from './CartDrawer';
+import Chatbot from './Chatbot';
 import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * RoomWrapper: Provee la estructura de "Maqueta" (Diorama 3D)
@@ -24,8 +28,10 @@ export default function RoomWrapper({
   onStarClick
 }) {
   const { usuario } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [showFilterSidebar, setShowFilterSidebar] = useState(false);
   const [showPurposeSidebar, setShowPurposeSidebar] = useState(false);
+  const { totalItems, isCartOpen, setIsCartOpen } = useCart();
 
   // Sobrescribimos los clics para que activen las sidebars globales
   const handleHeartClick = () => {
@@ -177,11 +183,46 @@ export default function RoomWrapper({
         <ProductSidebar 
           isOpen={showFilterSidebar} 
           onClose={() => setShowFilterSidebar(false)} 
+          onApplyFilters={(filters) => {
+            const params = new URLSearchParams();
+            if (filters.categoria !== 'todos') params.set('cat', filters.categoria);
+            if (filters.maxPrice > 0) params.set('maxPrice', filters.maxPrice);
+            if (filters.nivelJuego !== 'todos') params.set('nivelJuego', filters.nivelJuego);
+            
+            navigate(`/tienda?${params.toString()}`);
+          }}
         />
         <PurposeSidebar 
           isOpen={showPurposeSidebar} 
           onClose={() => setShowPurposeSidebar(false)} 
         />
+
+        {/* 🛒 CARRITO GLOBAL 🛒 */}
+        <CartDrawer 
+          isOpen={isCartOpen} 
+          onClose={() => setIsCartOpen(false)} 
+        />
+
+        {/* NOTIFICACIÓN DE CARRITO ABANDONADO */}
+        <AbandonedCartToast />
+
+        {/* 🛒 BOTÓN FLOTANTE DEL CARRITO 🛒 */}
+        <button 
+          onClick={() => setIsCartOpen(true)}
+          className={`fixed bottom-8 right-8 z-[150] w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group ${totalItems > 0 ? 'scale-100' : 'scale-0'}`}
+        >
+          <svg className="w-8 h-8 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4m1.6 8l-1.5 6h13M8 21a1 1 0 100-2 1 1 0 000 2zm10 0a1 1 0 100-2 1 1 0 000 2z" />
+          </svg>
+          {totalItems > 0 && (
+            <span className="absolute -top-1 -right-1 w-7 h-7 bg-red-500 border-4 border-white text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg animate-bounce">
+              {totalItems}
+            </span>
+          )}
+        </button>
+
+        {/* 🤖 CHATBOT GLOBAL 🤖 */}
+        <Chatbot />
         
         {/* Espaciador para no tapar el suelo */}
         {showFooter && <div className="h-[25vh]"></div>}
@@ -308,6 +349,57 @@ export default function RoomWrapper({
         }
       `}} />
 
+    </div>
+  );
+}
+
+function AbandonedCartToast() {
+  const { showAbandonedToast, setShowAbandonedToast, cart } = useCart();
+  
+  if (!showAbandonedToast || cart.length === 0) return null;
+
+  return (
+    <div className="fixed bottom-28 left-8 z-[200] max-w-sm animate-in slide-in-from-left-10 duration-700">
+      <div className="bg-white rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-4 border-amber-400 p-6 relative overflow-hidden group">
+        {/* Decoración burbujas */}
+        <div className="absolute -top-4 -right-4 w-12 h-12 bg-amber-100 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+        
+        <div className="relative z-10 flex gap-4">
+          <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center text-4xl shrink-0 shadow-inner">
+            🧸
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-[#451a03] uppercase tracking-tight mb-1">¡Vuelve, Vaquero!</h4>
+            <p className="text-[11px] font-bold text-[#92400E] leading-tight">
+              Tus juguetes se sienten abandonados en el baúl de Andy... ¡ven por ellos!
+            </p>
+            <div className="flex gap-2 mt-3">
+              <button 
+                onClick={() => setShowAbandonedToast(false)}
+                className="bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full hover:bg-amber-600 transition-colors"
+              >
+                Abrir Baúl
+              </button>
+              <button 
+                onClick={() => setShowAbandonedToast(false)}
+                className="text-[9px] font-black text-gray-400 uppercase tracking-widest px-2"
+              >
+                Ignorar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Botón Cerrar */}
+        <button 
+          onClick={() => setShowAbandonedToast(false)}
+          className="absolute top-2 right-2 text-gray-300 hover:text-gray-500 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
