@@ -37,7 +37,7 @@ export default function MisPedidos() {
 
   return (
     <RoomWrapper theme="woody" wallpaperContent={<WoodyWallpaper />} fullWallpaper={true}>
-      <div className="min-h-screen p-6 pt-32 pb-24 relative z-10 max-w-4xl mx-auto">
+      <div className="min-h-screen p-4 md:p-6 pt-20 md:pt-32 pb-24 relative z-10 max-w-4xl mx-auto">
         <div className="bg-white/90 backdrop-blur-md p-8 md:p-12 rounded-[3rem] shadow-2xl border-8 border-white">
           
           <div className="flex items-center justify-between mb-10">

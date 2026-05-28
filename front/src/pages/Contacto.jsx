@@ -56,7 +56,7 @@ export default function Contacto() {
       fullWallpaper={true} 
       wallpaperContent={<BuzzSuitBg />}
     >
-      <div className="p-10 pt-44 relative z-10">
+      <div className="p-4 md:p-10 pt-20 md:pt-44 relative z-10">
         {/* Contenido vacío según solicitud del usuario */}
       </div>
     </RoomWrapper>

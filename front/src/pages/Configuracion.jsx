@@ -106,7 +106,7 @@ export default function Configuracion() {
 
   return (
     <RoomWrapper theme="andy">
-      <div className="flex-1 flex items-center justify-center p-6 pt-32 pb-24">
+      <div className="flex-1 flex items-center justify-center p-4 pt-20 md:pt-32 pb-24">
         <div className="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl w-full max-w-3xl relative animate-in fade-in zoom-in-95 duration-500 border-[12px] border-blue-50">
           
           <div className="flex justify-center mb-6">
@@ -122,7 +122,7 @@ export default function Configuracion() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
             
             {/* LADO IZQUIERDO: Avatar e Info */}
             <div className="lg:col-span-4 flex flex-col items-center">

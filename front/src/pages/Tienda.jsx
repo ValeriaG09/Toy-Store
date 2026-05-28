@@ -214,7 +214,7 @@ export default function Tienda() {
       <div className="min-h-screen relative z-10">
 
         {/* ═══════ HERO BANNER ═══════ */}
-        <div className="relative overflow-hidden pt-32 pb-12 px-4 md:px-12">
+        <div className="relative overflow-hidden pt-20 md:pt-32 pb-12 px-4 md:px-12">
           <div className="max-w-7xl mx-auto text-center relative z-10">
             <div className="inline-flex items-center gap-2 bg-[#451a03] px-6 py-2 rounded-full mb-6 shadow-xl border-2 border-white/20">
               <span className="text-[11px] font-black text-white uppercase tracking-[4px]">🤠 El Bazar del Lejano Oeste</span>

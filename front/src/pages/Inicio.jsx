@@ -297,8 +297,8 @@ export default function Inicio() {
 
       {/* --- MODAL DE VERIFICACIÓN DE EDAD (BLOQUEO TOTAL) --- */}
       {(!ageVerifiedGlobal && !usuario && (!isLoggedInHint || !cargandoSesion)) && (
-        <div className="fixed inset-0 z-[2000] flex flex-col items-center py-12 md:py-20 px-4 bg-white/20 backdrop-blur-[10px] animate-in fade-in duration-700 overflow-y-auto">
-          <div className="bg-white rounded-[3rem] shadow-[0_40px_120px_rgba(0,0,0,0.4)] max-w-2xl w-full relative overflow-hidden py-16 px-8 md:px-20 flex flex-col items-center shrink-0 mb-12 border-[12px] border-[#81D4FA] active:shadow-inner transition-all">
+        <div className="fixed inset-0 z-[2000] flex flex-col items-center py-6 md:py-20 px-4 bg-white/20 backdrop-blur-[10px] animate-in fade-in duration-700 overflow-y-auto">
+          <div className="bg-white rounded-[3rem] shadow-[0_40px_120px_rgba(0,0,0,0.4)] max-w-2xl w-full relative overflow-hidden py-10 md:py-16 px-6 md:px-20 flex flex-col items-center shrink-0 mb-12 border-[12px] border-[#81D4FA] active:shadow-inner transition-all">
 
             {/* Header: Nuevo Logo (Más grande y espacioso) */}
             <div className="mb-12">
@@ -446,7 +446,7 @@ export default function Inicio() {
 
           {/* --- HABITACIÓN DE ANDY --- */}
           <main className="flex-1 flex flex-col items-center justify-start py-10 px-6 relative">
-            <div className="w-full max-w-2xl mt-44 z-30 relative group px-6 mx-auto">
+            <div className="w-full max-w-2xl mt-20 md:mt-44 z-30 relative group px-4 md:px-6 mx-auto">
               <div className="relative bg-[#fdfaf6] border-[8px] border-white rounded-t-[100px] rounded-b-xl shadow-[15px_15px_40px_rgba(0,0,0,0.08),inset_0_0_15px_rgba(0,0,0,0.03)] overflow-hidden min-h-[500px] flex flex-col border-b-[12px]">
                 <div className="h-24 w-full flex items-center justify-center bg-white/50 border-b-2 border-white">
                   <div className="px-6 py-1 border-2 border-blue-900/10 rounded-full">
