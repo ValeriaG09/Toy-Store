@@ -2,23 +2,23 @@
   "rewrites": [
     {
       "source": "/auth/:path*",
-      "destination": "https://toy-store-hn5r.onrender.com/auth/:path*"
+      "destination": "https://toystore-backend-jz4q.onrender.com/auth/:path*"
     },
     {
       "source": "/productos/:path*",
-      "destination": "https://toy-store-hn5r.onrender.com/productos/:path*"
+      "destination": "https://toystore-backend-jz4q.onrender.com/productos/:path*"
     },
     {
       "source": "/perfil/:path*",
-      "destination": "https://toy-store-hn5r.onrender.com/perfil/:path*"
+      "destination": "https://toystore-backend-jz4q.onrender.com/perfil/:path*"
     },
     {
       "source": "/pedidos/:path*",
-      "destination": "https://toy-store-hn5r.onrender.com/pedidos/:path*"
+      "destination": "https://toystore-backend-jz4q.onrender.com/pedidos/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://toy-store-hn5r.onrender.com/uploads/:path*"
+      "destination": "https://toystore-backend-jz4q.onrender.com/uploads/:path*"
     },
     {
       "source": "/(.*)",
