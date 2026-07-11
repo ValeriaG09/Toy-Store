@@ -5,10 +5,10 @@ const verifyToken = require('../middlewares/verifytoken');
 
 // Crear un nuevo pedido
 router.post('/', verifyToken, async (req, res) => {
-  let connection;
+  let client;
   try {
-    connection = await db.getConnection();
-    await connection.beginTransaction();
+    client = await db.connect();
+    await client.query('BEGIN');
 
     const { items, total, direccion } = req.body;
     const id_usuario = req.user?.id_usuario;
@@ -18,28 +18,28 @@ router.post('/', verifyToken, async (req, res) => {
     }
 
     // 1. Crear el registro en 'pedidos'
-    const [pedidoResult] = await connection.query(
-      'INSERT INTO pedidos (id_usuario, fecha, total, direccion_envio, id_estado) VALUES (?, NOW(), ?, ?, ?)',
+    const { rows: pedidoResult } = await client.query(
+      'INSERT INTO pedidos (id_usuario, fecha, total, direccion_envio, id_estado) VALUES ($1, NOW(), $2, $3, $4) RETURNING id_pedido',
       [id_usuario, total, direccion || 'Recogida en tienda', 1]
     );
 
-    const id_pedido = pedidoResult.insertId;
+    const id_pedido = pedidoResult[0].id_pedido;
 
     // 2. Crear los detalles del pedido
     for (const item of items) {
-      await connection.query(
-        'INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)',
+      await client.query(
+        'INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario, subtotal) VALUES ($1, $2, $3, $4, $5)',
         [id_pedido, item.id, item.cantidad, item.precio, item.precio * item.cantidad]
       );
 
       // 3. Descontar stock
-      await connection.query(
-        'UPDATE productos SET stock = stock - ? WHERE id_producto = ?',
+      await client.query(
+        'UPDATE productos SET stock = stock - $1 WHERE id_producto = $2',
         [item.cantidad, item.id]
       );
     }
 
-    await connection.commit();
+    await client.query('COMMIT');
     res.status(201).json({ 
       message: 'Pedido creado con éxito', 
       id_pedido,
@@ -47,14 +47,14 @@ router.post('/', verifyToken, async (req, res) => {
     });
 
   } catch (error) {
-    if (connection) await connection.rollback();
+    if (client) await client.query('ROLLBACK');
     console.error('💥 Error detallado al crear pedido:', {
       mensaje: error.message,
       codigo: error.code
     });
     res.status(500).json({ error: 'Fallo al procesar el pedido', detalle: error.message });
   } finally {
-    if (connection) connection.release();
+    if (client) client.release();
   }
 });
 
@@ -62,11 +62,11 @@ router.post('/', verifyToken, async (req, res) => {
 router.get('/mis-pedidos', verifyToken, async (req, res) => {
   try {
     const id_usuario = req.user?.id_usuario;
-    const [rows] = await db.query(`
+    const { rows } = await db.query(`
       SELECT p.*, e.nombre as estado
       FROM pedidos p
       JOIN estados_pedido e ON p.id_estado = e.id_estado
-      WHERE p.id_usuario = ?
+      WHERE p.id_usuario = $1
       ORDER BY p.fecha DESC
     `, [id_usuario]);
     res.json(rows);

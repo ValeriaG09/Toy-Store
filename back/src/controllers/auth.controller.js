@@ -27,8 +27,8 @@ const registro = async (req, res) => {
   }
 
   try {
-    const [existe] = await db.query(
-      'SELECT id_usuario FROM usuarios WHERE email = ?', [email]
+    const { rows: existe } = await db.query(
+      'SELECT id_usuario FROM usuarios WHERE email = $1', [email]
     );
     if (existe.length > 0) {
       return res.status(400).json({ error: 'El correo ya está registrado' });
@@ -42,7 +42,7 @@ const registro = async (req, res) => {
     const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
     await db.query(
-      'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES ($1, $2, $3, $4, $5)',
       [nombre, email, hash, fecha_nacimiento, rolFinal]
     );
 
@@ -63,8 +63,8 @@ const login = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
+    const { rows } = await db.query(
+      'SELECT * FROM usuarios WHERE email = $1', [email]
     );
 
     if (rows.length === 0) {
@@ -119,8 +119,8 @@ const forgotPassword = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
+    const { rows } = await db.query(
+      'SELECT * FROM usuarios WHERE email = $1', [email]
     );
 
     // Siempre responde igual por seguridad
@@ -137,7 +137,7 @@ const forgotPassword = async (req, res) => {
     const expiry = new Date(Date.now() + 3600000); // 1 hora
 
     await db.query(
-      'UPDATE usuarios SET reset_token = ?, reset_token_expiry = ? WHERE id_usuario = ?',
+      'UPDATE usuarios SET reset_token = $1, reset_token_expiry = $2 WHERE id_usuario = $3',
       [token, expiry, usuario.id_usuario]
     );
 
@@ -210,9 +210,9 @@ const resetPassword = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
+    const { rows } = await db.query(
       `SELECT * FROM usuarios 
-       WHERE reset_token = ? AND reset_token_expiry > NOW()`,
+       WHERE reset_token = $1 AND reset_token_expiry > NOW()`,
       [token]
     );
 
@@ -229,8 +229,8 @@ const resetPassword = async (req, res) => {
 
     await db.query(
       `UPDATE usuarios 
-       SET contrasena = ?, reset_token = NULL, reset_token_expiry = NULL 
-       WHERE id_usuario = ?`,
+       SET contrasena = $1, reset_token = NULL, reset_token_expiry = NULL 
+       WHERE id_usuario = $2`,
       [hash, usuario.id_usuario]
     );
 
@@ -271,8 +271,8 @@ const googleLogin = async (req, res) => {
     }
 
     // 2. Buscar si el usuario ya existe
-    let [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
+    let { rows } = await db.query(
+      'SELECT * FROM usuarios WHERE email = $1', [email]
     );
 
     let usuario;
@@ -286,15 +286,12 @@ const googleLogin = async (req, res) => {
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
-      const [resultRows] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
+      const { rows: resultRows } = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES ($1, $2, $3, $4, $5) RETURNING *',
         [name, email, randomPass, '2000-01-01', rolFinal]
       );
       
-      const [newRows] = await db.query(
-        'SELECT * FROM usuarios WHERE id_usuario = ?', [resultRows.insertId]
-      );
-      usuario = newRows[0];
+      usuario = resultRows[0];
     } else {
       usuario = rows[0];
     }
@@ -371,7 +368,7 @@ const verifyGoogleMock = async (req, res) => {
 
   try {
     // Buscar si existe o crear
-    let [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+    let { rows } = await db.query('SELECT * FROM usuarios WHERE email = $1', [email]);
     let usuario;
 
     if (rows.length === 0) {
@@ -384,18 +381,17 @@ const verifyGoogleMock = async (req, res) => {
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
-      const [resultRows] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
+      const { rows: resultRows } = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES ($1, $2, $3, $4, $5) RETURNING *',
         [nombreFinal, email, hash, '2000-01-01', rolFinal]
       );
-      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [resultRows.insertId]);
-      usuario = newRows[0];
+      usuario = resultRows[0];
     } else {
       // Si el usuario ya existe y nos mandó la contraseña por el mock, se la actualizamos 
       // para que su contraseña estándar coincida con la que acaba de usar en el mock.
       if (contrasena) {
         const hash = await bcrypt.hash(contrasena, 10);
-        await db.query('UPDATE usuarios SET contrasena = ? WHERE email = ?', [hash, email]);
+        await db.query('UPDATE usuarios SET contrasena = $1 WHERE email = $2', [hash, email]);
       }
       usuario = rows[0];
     }
@@ -431,7 +427,7 @@ const getMe = async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const [rows] = await db.query('SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol, avatar_url, preferencias FROM usuarios WHERE id_usuario = ?', [decoded.id]);
+    const { rows } = await db.query('SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol, avatar_url, preferencias FROM usuarios WHERE id_usuario = $1', [decoded.id]);
     if (rows.length === 0) return res.json({ usuario: null, message: 'Usuario no encontrado' });
     
     res.json({ 
@@ -456,4 +452,4 @@ const logout = (req, res) => {
   res.json({ message: 'Sesión cerrada exitosamente' });
 };
 
-module.exports = { registro, login, forgotPassword, resetPassword, googleLogin, sendGoogleVerification, verifyGoogleMock, getMe, logout };
+module.exports = { registro, login, forgotPassword, resetPassword, googleLogin, sendGoogleVerification, verifyGoogleMock, getMe, logout };

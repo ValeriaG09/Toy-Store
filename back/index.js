@@ -10,11 +10,25 @@ const pedidosRoutes = require('./src/routes/pedidos.routes');
 
 const app = express();
 
+// Configuramos CORS para permitir el frontend en Vercel y local
+const allowedOrigins = [
+  process.env.FRONTEND_URL, 
+  "https://toy-store-red-mu.vercel.app", 
+  "http://localhost:5173", 
+  "http://127.0.0.1:5173"
+].filter(Boolean); // Filtra nulos o undefined
+
 app.use(cors({
-  origin: ["http://localhost:5173", "http://127.0.0.1:5173", "https://toy-store-red-mu.vercel.app"],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 
 // Rutas

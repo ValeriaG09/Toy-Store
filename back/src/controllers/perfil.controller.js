@@ -8,7 +8,7 @@ exports.updatePassword = async (req, res) => {
     const userId = req.user.id_usuario;
 
     // 1. Buscar usuario
-    const [usuarios] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [userId]);
+    const { rows: usuarios } = await db.query('SELECT * FROM usuarios WHERE id_usuario = $1', [userId]);
     if (usuarios.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
 
     const usuario = usuarios[0];
@@ -22,7 +22,7 @@ exports.updatePassword = async (req, res) => {
     const hash = await bcrypt.hash(nueva, salt);
 
     // 4. Guardar
-    await db.query('UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?', [hash, userId]);
+    await db.query('UPDATE usuarios SET contrasena = $1 WHERE id_usuario = $2', [hash, userId]);
 
     res.json({ message: 'Contraseña actualizada con éxito 🤠' });
   } catch (err) {
@@ -36,7 +36,7 @@ exports.updatePreferencias = async (req, res) => {
     const { preferencias } = req.body;
     const userId = req.user.id_usuario;
 
-    await db.query('UPDATE usuarios SET preferencias = ? WHERE id_usuario = ?', [JSON.stringify(preferencias), userId]);
+    await db.query('UPDATE usuarios SET preferencias = $1 WHERE id_usuario = $2', [JSON.stringify(preferencias), userId]);
 
     res.json({ message: 'Preferencias guardadas ✨' });
   } catch (err) {
@@ -52,7 +52,7 @@ exports.updateAvatar = async (req, res) => {
 
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
-    await db.query('UPDATE usuarios SET avatar_url = ? WHERE id_usuario = ?', [avatarUrl, userId]);
+    await db.query('UPDATE usuarios SET avatar_url = $1 WHERE id_usuario = $2', [avatarUrl, userId]);
 
     res.json({ 
       message: 'Foto de perfil actualizada 📸',

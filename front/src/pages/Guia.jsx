@@ -1,7 +1,6 @@
 import React from 'react';
 import RoomWrapper from '../components/RoomWrapper';
 import { useNavigate } from 'react-router-dom';
-
 import LotsoFurImg from '../assets/lotso_fur_texture.png';
 
 export default function Guia() {
@@ -17,12 +16,12 @@ export default function Guia() {
             backgroundImage: `url(${LotsoFurImg})`,
             backgroundSize: '450px auto',
             backgroundRepeat: 'repeat',
-            boxShadow: 'inset 0 0 100px rgba(0,0,0,0.2)' // Sombra suave para profundidad
+            boxShadow: 'inset 0 0 100px rgba(0,0,0,0.2)'
           }}
         />
       }
     >
-      <div className="p-10 pt-44 relative z-10">
+      <div className="px-4 md:px-10 pt-20 md:pt-44 pb-10 relative z-10">
         {/* Contenido vacío temporalmente */}
       </div>
     </RoomWrapper>

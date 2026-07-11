@@ -28,17 +28,17 @@ router.get('/', async (req, res) => {
              END as categoria
       FROM productos p
       LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
-      WHERE p.activo = 1
+      WHERE p.activo = true
     `;
     const params = [];
 
     if (minPrice) {
-      query += ' AND p.precio >= ?';
       params.push(minPrice);
+      query += ` AND p.precio >= $${params.length}`;
     }
     if (maxPrice) {
-      query += ' AND p.precio <= ?';
       params.push(maxPrice);
+      query += ` AND p.precio <= $${params.length}`;
     }
     if (finalCat && finalCat !== 'todos' && finalCat !== 'null') {
       // Mapeo de slugs/misiones del frontend a IDs de la DB
@@ -66,26 +66,29 @@ router.get('/', async (req, res) => {
       const targetIds = catMap[finalCat.toLowerCase()] || [];
       
       if (targetIds.length > 0) {
-        const placeholders = targetIds.map(() => '?').join(',');
-        query += ` AND (p.id_categoria IN (${placeholders}) OR LOWER(p.nombre) LIKE ?)`;
-        targetIds.forEach(id => params.push(id));
+        const placeholders = targetIds.map(() => {
+          params.push(targetIds.shift());
+          return `$${params.length}`;
+        }).join(',');
+        
+        // Push the LIKE parameter
         params.push(`%${finalCat.toLowerCase()}%`);
+        query += ` AND (p.id_categoria IN (${placeholders}) OR LOWER(p.nombre) LIKE $${params.length})`;
       } else {
         // Si no hay mapeo, intentamos buscar por nombre directamente
-        query += ` AND (LOWER(c.nombre) LIKE ? OR LOWER(p.nombre) LIKE ?)`;
         params.push(`%${finalCat.toLowerCase()}%`);
-        params.push(`%${finalCat.toLowerCase()}%`);
+        query += ` AND (LOWER(c.nombre) LIKE $${params.length} OR LOWER(p.nombre) LIKE $${params.length})`;
       }
     }
 
     if (nivelJuego && nivelJuego !== 'todos') {
-      query += ' AND p.nivel_discrecion >= ?';
       params.push(nivelJuego);
+      query += ` AND p.nivel_discrecion >= $${params.length}`;
     }
 
     query += ' ORDER BY p.id_producto DESC';
 
-    const [rows] = await db.query(query, params);
+    const { rows } = await db.query(query, params);
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener productos:', error);
@@ -97,7 +100,7 @@ router.get('/', async (req, res) => {
 router.get('/admin/stats', async (req, res) => {
   try {
     // 1. Conteo por categorías
-    const [catStock] = await db.query(`
+    const { rows: catStock } = await db.query(`
       SELECT c.nombre, COUNT(p.id_producto) as cantidad
       FROM categorias c
       LEFT JOIN productos p ON c.id_categoria = p.id_categoria
@@ -105,16 +108,18 @@ router.get('/admin/stats', async (req, res) => {
     `);
 
     // 2. Ventas por periodos (Incluimos todo lo que no sea 'cancelado' para el reporte del admin)
-    const activeStatusQuery = 'id_estado != (SELECT id_estado FROM estados_pedido WHERE nombre = "cancelado")';
+    const activeStatusQuery = 'id_estado != (SELECT id_estado FROM estados_pedido WHERE LOWER(nombre) = \'cancelado\')';
     
-    const [totalSales] = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery}`);
-    const [weeklySales] = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery} AND fecha >= DATE_SUB(NOW(), INTERVAL 7 DAY)`);
-    const [monthlySales] = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery} AND fecha >= DATE_SUB(NOW(), INTERVAL 30 DAY)`);
-    const [yearlySales] = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery} AND fecha >= DATE_SUB(NOW(), INTERVAL 1 YEAR)`);
+    // NOW() in Postgres is similar, but interval syntax is different.
+    // 'NOW() - INTERVAL \'7 DAY\'' is PostgreSQL standard.
+    const { rows: totalSales } = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery}`);
+    const { rows: weeklySales } = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery} AND fecha >= NOW() - INTERVAL '7 DAY'`);
+    const { rows: monthlySales } = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery} AND fecha >= NOW() - INTERVAL '30 DAY'`);
+    const { rows: yearlySales } = await db.query(`SELECT SUM(total) as total FROM pedidos WHERE ${activeStatusQuery} AND fecha >= NOW() - INTERVAL '1 YEAR'`);
 
     // 3. Totales generales
-    const [totalProducts] = await db.query('SELECT COUNT(*) as count FROM productos');
-    const [lowStockItems] = await db.query('SELECT nombre, stock FROM productos WHERE stock > 0 AND stock < 5');
+    const { rows: totalProducts } = await db.query('SELECT COUNT(*) as count FROM productos');
+    const { rows: lowStockItems } = await db.query('SELECT nombre, stock FROM productos WHERE stock > 0 AND stock < 5');
 
     res.json({
       total_productos: totalProducts[0].count,
@@ -135,7 +140,7 @@ router.get('/admin/stats', async (req, res) => {
 // Endpoint para stock detallado
 router.get('/admin/stock', async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const { rows } = await db.query(`
       SELECT p.nombre, p.stock, c.nombre as categoria 
       FROM productos p 
       LEFT JOIN categorias c ON p.id_categoria = c.id_categoria 
@@ -152,7 +157,7 @@ router.get('/admin/stock', async (req, res) => {
 router.get('/:id/resenas', async (req, res) => {
   try {
     const { id } = req.params;
-    const [rows] = await db.query('SELECT * FROM resenas WHERE producto_id = ? ORDER BY fecha DESC', [id]);
+    const { rows } = await db.query('SELECT * FROM resenas WHERE producto_id = $1 ORDER BY fecha DESC', [id]);
     res.json(rows);
   } catch (error) {
     console.error('Error al obtener reseñas:', error);
@@ -171,7 +176,7 @@ router.post('/:id/resenas', async (req, res) => {
     }
 
     await db.query(
-      'INSERT INTO resenas (producto_id, usuario, texto, medalla, icono, color) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO resenas (producto_id, usuario, texto, medalla, icono, color) VALUES ($1, $2, $3, $4, $5, $6)',
       [id, usuario || 'Vaquero Anónimo', texto, medalla, icono, color]
     );
 
@@ -182,4 +187,4 @@ router.post('/:id/resenas', async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;
