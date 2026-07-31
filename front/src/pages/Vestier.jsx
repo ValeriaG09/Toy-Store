@@ -116,19 +116,39 @@ export default function Vestier() {
     startCamera();
   };
 
+  // Helper para convertir Base64 a Blob
+  const base64ToBlob = (base64, mimeType) => {
+    const byteCharacters = atob(base64.split(',')[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mimeType });
+  };
+
   // Enviar a la IA (Virtual Try-On)
   const applyTryOn = async () => {
     if (!capturedImage) return;
     setLoading(true);
     setErrorMsg('');
     try {
-      const res = await fetch('/productos/try-on', {
+      const personaBlob = base64ToBlob(capturedImage, 'image/jpeg');
+
+      const garmentImagePath = garmentId === 'jessy' 
+        ? '/img/productos/lenceria_jessi.webp' 
+        : '/img/productos/lenceria_bo.jpeg';
+      
+      const garmentRes = await fetch(garmentImagePath);
+      const prendaBlob = await garmentRes.blob();
+
+      const formData = new FormData();
+      formData.append('persona', personaBlob, 'persona.jpg');
+      formData.append('prenda', prendaBlob, garmentId === 'jessy' ? 'prenda.webp' : 'prenda.jpeg');
+
+      const res = await fetch('/vestier/probar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          person_image: capturedImage,
-          garment_id: garmentId
-        })
+        body: formData
       });
 
       const data = await res.json();
@@ -195,7 +215,7 @@ export default function Vestier() {
                     onClick={startCamera}
                     className="w-full py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-black text-lg uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-transform"
                   >
-                    📸 Abrir Cámara
+                     Abrir Cámara
                   </button>
                 )}
 
@@ -244,7 +264,7 @@ export default function Vestier() {
                       onClick={applyTryOn}
                       className="w-full py-4 bg-gradient-to-r from-green-400 to-green-600 text-white font-black text-lg uppercase tracking-widest rounded-2xl shadow-xl hover:scale-105 transition-transform animate-pulse"
                     >
-                      ✨ Probarme el Traje ✨
+                       Probarme el Traje 
                     </button>
                   </div>
                 </div>
@@ -264,7 +284,7 @@ export default function Vestier() {
                 <div className="w-full h-full relative animate-in fade-in duration-1000">
                   <img src={resultImage} alt="Resultado" className="w-full h-full object-cover" />
                   <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg uppercase">
-                    Misión Cumplida
+                    ✨ ASÍ TE QUEDA ✨
                   </div>
                 </div>
               )}
@@ -272,7 +292,7 @@ export default function Vestier() {
               {/* ESTADO VACÍO */}
               {!cameraActive && !capturedImage && !resultImage && !loading && (
                 <div className="text-center p-8 opacity-50">
-                  <div className="text-6xl mb-4">👗</div>
+                  <div className="text-6xl mb-4"></div>
                   <p className="font-bold uppercase tracking-widest text-slate-500">Espejo Mágico Apagado</p>
                 </div>
               )}
@@ -282,7 +302,7 @@ export default function Vestier() {
           
           {errorMsg && (
             <div className="mt-6 p-4 bg-red-100 border-2 border-red-200 text-red-700 font-black rounded-xl text-center uppercase text-sm">
-              🚨 {errorMsg}
+               {errorMsg}
             </div>
           )}
 

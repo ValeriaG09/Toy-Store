@@ -7,6 +7,7 @@ const authRoutes = require('./src/routes/auth.routes');
 const productosRoutes = require('./src/routes/productos.routes');
 const perfilRoutes = require('./src/routes/perfil.routes');
 const pedidosRoutes = require('./src/routes/pedidos.routes');
+const vestierRoutes = require('./src/routes/vestier.routes');
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/auth', authRoutes);
 app.use('/productos', productosRoutes);
 app.use('/perfil', perfilRoutes);
 app.use('/pedidos', pedidosRoutes);
+app.use('/vestier', vestierRoutes);
 
 // Servir archivos estáticos (Subidas)
 const path = require('path');
@@ -43,16 +45,16 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Ruta de prueba
 app.get('/', (req, res) => {
-  res.json({ message: '🧸 API Toy Store funcionando' });
+  res.json({ message: ' API Toy Store funcionando' });
 });
 
 // Middleware de manejo de errores global
 app.use((err, req, res, next) => {
-  console.error('💥 Error no controlado:', err);
+  console.error(' Error no controlado:', err);
   res.status(500).json({ error: 'Error interno en el servidor', detalle: err.message });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+  console.log(` Servidor corriendo en el puerto ${PORT}`);
 });

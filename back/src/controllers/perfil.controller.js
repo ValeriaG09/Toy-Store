@@ -24,7 +24,7 @@ exports.updatePassword = async (req, res) => {
     // 4. Guardar
     await db.query('UPDATE usuarios SET contrasena = $1 WHERE id_usuario = $2', [hash, userId]);
 
-    res.json({ message: 'Contraseña actualizada con éxito 🤠' });
+    res.json({ message: 'Contraseña actualizada con éxito ' });
   } catch (err) {
     res.status(500).json({ error: 'Error al cambiar contraseña', detalle: err.message });
   }
@@ -38,7 +38,7 @@ exports.updatePreferencias = async (req, res) => {
 
     await db.query('UPDATE usuarios SET preferencias = $1 WHERE id_usuario = $2', [JSON.stringify(preferencias), userId]);
 
-    res.json({ message: 'Preferencias guardadas ✨' });
+    res.json({ message: 'Preferencias guardadas ' });
   } catch (err) {
     res.status(500).json({ error: 'Error al guardar preferencias', detalle: err.message });
   }
@@ -55,7 +55,7 @@ exports.updateAvatar = async (req, res) => {
     await db.query('UPDATE usuarios SET avatar_url = $1 WHERE id_usuario = $2', [avatarUrl, userId]);
 
     res.json({ 
-      message: 'Foto de perfil actualizada 📸',
+      message: 'Foto de perfil actualizada ',
       avatar_url: avatarUrl 
     });
   } catch (err) {

@@ -7,7 +7,7 @@ const ToyMobile = ({ onHeartClick, onStarClick }) => {
     {
       id: 'heart',
       color: 'bg-[#FF69B4]', // Pink Heart
-      icon: '❤',
+      icon: '',
       side: 'left',
       title: 'BUSCAR PRODUCTOS',
       content: 'Abre el catálogo completo con filtros personalizados.',
@@ -16,7 +16,7 @@ const ToyMobile = ({ onHeartClick, onStarClick }) => {
     {
       id: 'moon',
       color: 'bg-[#8B0000]', // Dark Red Moon
-      icon: '🌙',
+      icon: '',
       side: 'right',
       title: 'MODO NOCTURNO',
       content: 'La luna ha salido en el cuarto de Andy. Es el momento perfecto para explorar nuestras guías de uso nocturno y tips de lubricación.',

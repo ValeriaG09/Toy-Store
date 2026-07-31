@@ -335,7 +335,7 @@ const sendGoogleVerification = async (req, res) => {
     googleCodes.set(email, { codigo, expiry: Date.now() + 600000 }); // 10 min
 
     await transporter.sendMail({
-      from: `"Google Accounts 🛡️" <${process.env.EMAIL_USER}>`,
+      from: `"Google Accounts ️" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: `${codigo} es tu código de verificación de Google`,
       html: `

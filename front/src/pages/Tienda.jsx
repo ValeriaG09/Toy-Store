@@ -42,19 +42,19 @@ const PRODUCTOS_FALLBACK = [
 ];
 
 const CATEGORIAS = [
-  { id: 'vibradores', label: 'Vibradores', emoji: '🍆', color: 'from-purple-400 to-purple-600' },
-  { id: 'lencerias', label: 'Lencería', emoji: '👙', color: 'from-pink-400 to-pink-600' },
-  { id: 'anales', label: 'Anales', emoji: '🍑', color: 'from-orange-400 to-orange-600' },
-  { id: 'kits', label: 'Kits', emoji: '📦', color: 'from-blue-400 to-blue-600' },
-  { id: 'accesorios', label: 'Accesorios', emoji: '✨', color: 'from-emerald-400 to-emerald-600' },
+  { id: 'vibradores', label: 'Vibradores', emoji: '', color: 'from-purple-400 to-purple-600' },
+  { id: 'lencerias', label: 'Lencería', emoji: '', color: 'from-pink-400 to-pink-600' },
+  { id: 'anales', label: 'Anales', emoji: '', color: 'from-orange-400 to-orange-600' },
+  { id: 'kits', label: 'Kits', emoji: '', color: 'from-blue-400 to-blue-600' },
+  { id: 'accesorios', label: 'Accesorios', emoji: '', color: 'from-emerald-400 to-emerald-600' },
 ];
 
 const MISSIONS = [
-  { id: 'todos', label: 'Todo el Baúl', emoji: '🤠', color: 'from-amber-400 to-amber-600', mood: '¡Listo para cualquier aventura, Vaquero!' },
-  { id: 'romance', label: 'Cita Romántica', emoji: '🌹', color: 'from-red-400 to-rose-600', mood: 'Hilos secretos y velas... una noche de pura seda.', categories: ['lencerias', 'kits'] },
-  { id: 'solitario', label: 'Misión Solitaria', emoji: '🕵️‍♂️', color: 'from-indigo-400 to-purple-600', mood: 'Solo tú y tu baúl de tesoros espaciales.', categories: ['vibradores'] },
-  { id: 'aventura', label: 'Rodeo Salvaje', emoji: '🔥', color: 'from-orange-500 to-red-700', mood: '¡Arre! Prepárate para la acción más intensa.', categories: ['anales', 'accesorios'] },
-  { id: 'regalo', label: 'Misión: Sorpresa', emoji: '🎁', color: 'from-emerald-400 to-teal-600', mood: 'El regalo perfecto para tu persona favorita.', categories: ['kits', 'accesorios'] },
+  { id: 'todos', label: 'Todo el Baúl', emoji: '', color: 'from-amber-400 to-amber-600', mood: '¡Listo para cualquier aventura, Vaquero!' },
+  { id: 'romance', label: 'Cita Romántica', emoji: '', color: 'from-red-400 to-rose-600', mood: 'Hilos secretos y velas... una noche de pura seda.', categories: ['lencerias', 'kits'] },
+  { id: 'solitario', label: 'Misión Solitaria', emoji: '️‍️', color: 'from-indigo-400 to-purple-600', mood: 'Solo tú y tu baúl de tesoros espaciales.', categories: ['vibradores'] },
+  { id: 'aventura', label: 'Rodeo Salvaje', emoji: '', color: 'from-orange-500 to-red-700', mood: '¡Arre! Prepárate para la acción más intensa.', categories: ['anales', 'accesorios'] },
+  { id: 'regalo', label: 'Misión: Sorpresa', emoji: '', color: 'from-emerald-400 to-teal-600', mood: 'El regalo perfecto para tu persona favorita.', categories: ['kits', 'accesorios'] },
 ];
 
 const formatCOP = (amount) => {
@@ -88,8 +88,8 @@ const getCategoryGradient = (cat) => {
 };
 
 const getCategoryEmoji = (cat) => {
-  const map = { vibradores: '🍆', lencerias: '👙', anales: '🍑', kits: '📦', accesorios: '✨' };
-  return map[cat] || '🎁';
+  const map = { vibradores: '', lencerias: '', anales: '', kits: '', accesorios: '' };
+  return map[cat] || '';
 };
 
 /**
@@ -114,7 +114,7 @@ export default function Tienda() {
 
   // SEO & Meta Tags
   useEffect(() => {
-    document.title = "Toy Store | Bazar Erótico | Aprende y Explora el Placer Vaquero 🤠";
+    document.title = "Toy Store | Bazar Erótico | Aprende y Explora el Placer Vaquero ";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute("content", "Descubre el bazar del Lejano Oeste. Guía educativa de juguetes eróticos, lencería premium y misiones de exploración nocturna. ¡Al infinito y al placer!");
@@ -130,15 +130,15 @@ export default function Tienda() {
         const res = await fetch(`/productos?${queryParams}`);
         if (!res.ok) throw new Error('Error al cargar productos');
         const data = await res.json();
-        console.log('📦 Productos recibidos:', data.length);
+        console.log(' Productos recibidos:', data.length);
         if (data && data.length > 0) {
           setProductos(data);
         } else {
-          console.warn('⚠️ API devolvió lista vacía');
+          console.warn('️ API devolvió lista vacía');
           setProductos(PRODUCTOS_FALLBACK);
         }
       } catch (err) {
-        console.warn('⚠️ API no disponible, usando catálogo de demostración:', err.message);
+        console.warn('️ API no disponible, usando catálogo de demostración:', err.message);
         setProductos(PRODUCTOS_FALLBACK);
         setError(null);
       } finally {
@@ -217,7 +217,7 @@ export default function Tienda() {
         <div className="relative overflow-hidden pt-20 md:pt-32 pb-12 px-4 md:px-12">
           <div className="max-w-7xl mx-auto text-center relative z-10">
             <div className="inline-flex items-center gap-2 bg-[#451a03] px-6 py-2 rounded-full mb-6 shadow-xl border-2 border-white/20">
-              <span className="text-[11px] font-black text-white uppercase tracking-[4px]">🤠 El Bazar del Lejano Oeste</span>
+              <span className="text-[11px] font-black text-white uppercase tracking-[4px]"> El Bazar del Lejano Oeste</span>
             </div>
             <h1 className={`text-4xl md:text-6xl font-[1000] uppercase tracking-tight leading-none mb-3 transition-colors duration-500 ${misionActiva !== 'todos' ? 'text-white' : 'text-[#451a03]'}`} style={{ textShadow: misionActiva === 'todos' ? '2px 2px 0px rgba(255,255,255,0.4)' : 'none' }}>
               {getActiveMission().label}
@@ -331,7 +331,7 @@ export default function Tienda() {
             /* ─── EMPTY STATE ─── */
             <div className="flex flex-col items-center justify-center py-20">
               <div className="w-32 h-32 bg-white/40 rounded-full flex items-center justify-center mb-8 shadow-inner">
-                <span className="text-6xl">🤷</span>
+                <span className="text-6xl"></span>
               </div>
               <h3 className="text-2xl font-black text-[#92400E] uppercase mb-2">¡Vaya, Vaquero!</h3>
               <p className="text-sm font-bold text-[#92400E]/50 mb-6">No encontramos productos que coincidan con tu búsqueda</p>

@@ -46,18 +46,18 @@ export default function MisPedidos() {
               <p className="text-[10px] font-black text-amber-600 uppercase tracking-[4px]">El historial de tu baúl</p>
             </div>
             <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center text-3xl shadow-inner">
-              📜
+              
             </div>
           </div>
 
           {loading ? (
             <div className="py-20 text-center animate-pulse">
-               <span className="text-4xl">🚀</span>
+               <span className="text-4xl"></span>
                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-4">Buscando en los archivos de Andy...</p>
             </div>
           ) : pedidos.length === 0 ? (
             <div className="py-20 text-center bg-gray-50 rounded-[2rem] border-4 border-dashed border-gray-100">
-               <span className="text-5xl block mb-4">🌵</span>
+               <span className="text-5xl block mb-4"></span>
                <p className="text-sm font-black text-gray-400 uppercase tracking-widest">No has realizado ningún pedido aún</p>
                <button 
                  onClick={() => window.location.href = '/tienda'}
@@ -72,7 +72,7 @@ export default function MisPedidos() {
                 <div key={p.id_pedido} className="bg-white p-6 rounded-3xl border-2 border-gray-50 shadow-sm hover:shadow-md hover:border-amber-100 transition-all group">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform">📦</div>
+                      <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform"></div>
                       <div>
                         <h4 className="font-black text-[#451a03] uppercase text-sm">Pedido #{p.id_pedido}</h4>
                         <p className="text-[10px] font-bold text-gray-400 uppercase">{new Date(p.fecha).toLocaleDateString()} a las {new Date(p.fecha).toLocaleTimeString()}</p>

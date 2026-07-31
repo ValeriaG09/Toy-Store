@@ -70,7 +70,7 @@ export default function CartDrawer({ isOpen, onClose }) {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {cart.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
-              <span className="text-6xl">🏜️</span>
+              <span className="text-6xl">️</span>
               <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Tu baúl está vacío, vaquero</p>
               <button 
                 onClick={onClose}
@@ -87,7 +87,7 @@ export default function CartDrawer({ isOpen, onClose }) {
                     <img src={item.imagen_url} alt={item.nombre} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-3xl opacity-50">
-                      🎁
+                      
                     </div>
                   )}
                 </div>
@@ -140,7 +140,7 @@ export default function CartDrawer({ isOpen, onClose }) {
             
             {error && (
               <p className="text-[10px] font-black text-red-500 uppercase text-center mb-4 bg-red-50 p-3 rounded-xl border border-red-100 animate-pulse">
-                ⚠️ {error}
+                ️ {error}
               </p>
             )}
 

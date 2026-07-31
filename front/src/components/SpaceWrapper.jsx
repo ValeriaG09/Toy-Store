@@ -27,7 +27,7 @@ export default function SpaceWrapper({ children }) {
   return (
     <div className="min-h-screen bg-black relative flex flex-col overflow-hidden select-none">
       
-      {/* 🛑 CAPA DE FONDO: ESPACIO PROFUNDO ELITE 🛑 */}
+      {/*  CAPA DE FONDO: ESPACIO PROFUNDO ELITE  */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <div className="absolute inset-0 bg-[#020617] transition-all duration-1000"></div>
         
@@ -74,7 +74,7 @@ export default function SpaceWrapper({ children }) {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-[#020617]"></div>
       </div>
 
-      {/* 🛑 NAVBAR SUPERIOR (ELITE HUD) 🛑 */}
+      {/*  NAVBAR SUPERIOR (ELITE HUD)  */}
       <div className="fixed top-0 left-0 w-full z-50 h-16 cockpit-frame border-t-0 flex justify-between items-center px-6 md:px-12 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
           <div className="flex items-center gap-6">
             <div className="flex gap-1.5 h-4 items-end">
@@ -174,7 +174,7 @@ export default function SpaceWrapper({ children }) {
           </div>
       </div>
 
-      {/* 🛑 CAPA DE CABINA (HUD AVANZADO) 🛑 */}
+      {/*  CAPA DE CABINA (HUD AVANZADO)  */}
       <div className="absolute inset-0 z-10 pointer-events-none flex flex-col justify-between overflow-hidden animate-ship-shake">
         
         {/* Espaciador superior */}
@@ -216,7 +216,7 @@ export default function SpaceWrapper({ children }) {
            </div>
         </div>
 
-        {/* 🚀 EL TABLERO DE MANDOS (ELITE REFINEMENT) 🚀 */}
+        {/*  EL TABLERO DE MANDOS (ELITE REFINEMENT)  */}
         <div className="h-[30vh] lg:h-[35vh] w-full cockpit-frame border-b-0 relative rounded-t-[100px] p-8 flex justify-center items-end overflow-hidden">
            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
            
@@ -293,7 +293,7 @@ export default function SpaceWrapper({ children }) {
         </div>
       </div>
 
-      {/* 🛑 CONTENIDO FRONTAL (Con Glassmorphism 2.0) 🛑 */}
+      {/*  CONTENIDO FRONTAL (Con Glassmorphism 2.0)  */}
       <div className="relative z-20 flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden custom-scrollbar">
         <div className="flex-1 shrink-0 relative flex flex-col pt-28 px-4 overflow-x-hidden">
            {children}

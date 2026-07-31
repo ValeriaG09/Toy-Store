@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
 const REFERENCE_OBJECTS = [
-  { id: 'banana', name: 'Banana 🍌', height: 20, width: 4, color: 'bg-yellow-400', emoji: '🍌' },
-  { id: 'remote', name: 'Control Remoto 📺', height: 18, width: 5, color: 'bg-gray-800', emoji: '📺' },
-  { id: 'card', name: 'Tarjeta 💳', height: 8.5, width: 5.4, color: 'bg-blue-600', emoji: '💳' },
-  { id: 'phone', name: 'Smartphone 📱', height: 15, width: 7.5, color: 'bg-slate-900', emoji: '📱' },
+  { id: 'banana', name: 'Banana ', height: 20, width: 4, color: 'bg-yellow-400', emoji: '' },
+  { id: 'remote', name: 'Control Remoto ', height: 18, width: 5, color: 'bg-gray-800', emoji: '' },
+  { id: 'card', name: 'Tarjeta ', height: 8.5, width: 5.4, color: 'bg-blue-600', emoji: '' },
+  { id: 'phone', name: 'Smartphone ', height: 15, width: 7.5, color: 'bg-slate-900', emoji: '' },
 ];
 
 export default function ToyTester({ product, isOpen, onClose }) {
@@ -26,7 +26,7 @@ export default function ToyTester({ product, isOpen, onClose }) {
         {/* Header */}
         <div className="bg-amber-400 p-6 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-black text-[#451a03] uppercase tracking-tighter">Toy-Tester Virtual 📐</h2>
+            <h2 className="text-xl font-black text-[#451a03] uppercase tracking-tighter">Toy-Tester Virtual </h2>
             <p className="text-[10px] font-bold text-[#451a03]/60 uppercase tracking-widest">Compara la escala real de tu juguete</p>
           </div>
           <button onClick={onClose} className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/40 transition-colors">
@@ -101,7 +101,7 @@ export default function ToyTester({ product, isOpen, onClose }) {
 
         {/* Footer info */}
         <div className="bg-gray-50 p-6 flex items-center gap-4">
-           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-sm">💡</div>
+           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-xl shadow-sm"></div>
            <p className="text-[11px] font-bold text-gray-500 leading-tight">
              <b>Dato del Sheriff:</b> Esta escala es una aproximación visual. Recuerda que cada cuerpo es un mundo y lo importante es cómo te sientas tú con tu nuevo juguete.
            </p>

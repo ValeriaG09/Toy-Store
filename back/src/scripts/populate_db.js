@@ -114,11 +114,11 @@ const products = [
 
 async function populate() {
   try {
-    console.log('🚀 Iniciando población de base de datos...');
+    console.log(' Iniciando población de base de datos...');
     
     // Limpiar tabla productos
     await db.query('DELETE FROM productos');
-    console.log('🗑️ Tabla productos limpiada.');
+    console.log('️ Tabla productos limpiada.');
 
     for (const p of products) {
       await db.query(
@@ -127,9 +127,9 @@ async function populate() {
       );
     }
 
-    console.log('✅ Base de datos poblada con éxito.');
+    console.log(' Base de datos poblada con éxito.');
   } catch (error) {
-    console.error('❌ Error al poblar la base de datos:', error);
+    console.error(' Error al poblar la base de datos:', error);
   } finally {
     process.exit();
   }

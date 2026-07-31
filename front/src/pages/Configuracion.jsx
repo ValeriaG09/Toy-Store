@@ -38,7 +38,7 @@ export default function Configuracion() {
       const data = await res.json();
       if (res.ok) {
         verificarSesion(); // Recargar usuario global
-        alert('¡Foto de perfil actualizada! 📸');
+        alert('¡Foto de perfil actualizada! ');
       } else {
         alert(data.error || 'Error al subir imagen');
       }
@@ -145,7 +145,7 @@ export default function Configuracion() {
                   </div>
                 </div>
                 <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-yellow-400 rounded-2xl shadow-lg flex items-center justify-center text-white border-4 border-white">
-                  ✨
+                  
                 </div>
               </div>
               
@@ -176,7 +176,7 @@ export default function Configuracion() {
                     }`}
                   >
                     <span className={`text-[10px] font-black uppercase tracking-tight ${val ? 'text-blue-900' : 'text-gray-400'}`}>
-                      {key === 'discreto' ? '🔒 Modo Discreto' : key === 'ofertas' ? '🎁 Recibir Ofertas' : '📧 Newsletter'}
+                      {key === 'discreto' ? ' Modo Discreto' : key === 'ofertas' ? ' Recibir Ofertas' : ' Newsletter'}
                     </span>
                     <div className={`w-8 h-4 rounded-full relative transition-colors ${val ? 'bg-blue-500' : 'bg-gray-300'}`}>
                       <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${val ? 'left-4.5' : 'left-0.5'}`}></div>

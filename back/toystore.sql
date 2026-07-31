@@ -261,7 +261,7 @@ CREATE TABLE `resenas` (
 --
 
 INSERT INTO `resenas` (`id_resena`, `producto_id`, `usuario`, `texto`, `medalla`, `icono`, `color`, `fecha`) VALUES
-(1, 16, 'Sara', 'Increible!!', 'Centinela de la Noche', '🌙', 'bg-indigo-100 text-indigo-700', '2026-05-15 16:12:20');
+(1, 16, 'Sara', 'Increible!!', 'Centinela de la Noche', '', 'bg-indigo-100 text-indigo-700', '2026-05-15 16:12:20');
 
 -- --------------------------------------------------------
 

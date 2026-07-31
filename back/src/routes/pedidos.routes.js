@@ -48,7 +48,7 @@ router.post('/', verifyToken, async (req, res) => {
 
   } catch (error) {
     if (client) await client.query('ROLLBACK');
-    console.error('💥 Error detallado al crear pedido:', {
+    console.error(' Error detallado al crear pedido:', {
       mensaje: error.message,
       codigo: error.code
     });

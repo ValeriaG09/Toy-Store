@@ -30,7 +30,7 @@ const todosLosProductos = [
 ];
 
 async function resetProducts() {
-  console.log('🔄 Reiniciando catálogo de productos...');
+  console.log(' Reiniciando catálogo de productos...');
   try {
     // 1. Limpiar tabla (Opcional: puedes borrar o solo actualizar)
     // Para asegurar que sea "un solo archivo", vamos a truncar y re-insertar
@@ -39,19 +39,19 @@ async function resetProducts() {
     await db.query('TRUNCATE TABLE productos');
     await db.query('SET FOREIGN_KEY_CHECKS = 1');
 
-    console.log('🗑️ Tabla vaciada.');
+    console.log('️ Tabla vaciada.');
 
     for (const p of todosLosProductos) {
       await db.query(
         'INSERT INTO productos (nombre, descripcion, precio, id_categoria, nivel_discrecion, imagen, stock, activo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
         [p.nombre, p.descripcion, p.precio, p.id_categoria, p.nivel_discrecion, p.imagen, p.stock]
       );
-      console.log(`✅ Insertado: ${p.nombre}`);
+      console.log(` Insertado: ${p.nombre}`);
     }
 
-    console.log('✨ Catálogo completo sincronizado con éxito.');
+    console.log(' Catálogo completo sincronizado con éxito.');
   } catch (err) {
-    console.error('❌ Error fatal:', err.message);
+    console.error(' Error fatal:', err.message);
   }
   process.exit();
 }

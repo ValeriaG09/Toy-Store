@@ -27,7 +27,7 @@ function RutaProtegida({ children }) {
   if (cargandoSesion) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-sky-300 text-white font-bold text-2xl animate-pulse">
-        🧸 Cargando la magia de Toy Store...
+         Cargando la magia de Toy Store...
       </div>
     );
   }

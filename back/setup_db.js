@@ -15,10 +15,10 @@ async function setupReviewsTable() {
       )
     `;
     await db.query(createTableQuery);
-    console.log('✅ Tabla "resenas" creada o ya existente.');
+    console.log(' Tabla "resenas" creada o ya existente.');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error al crear la tabla "resenas":', error);
+    console.error(' Error al crear la tabla "resenas":', error);
     process.exit(1);
   }
 }

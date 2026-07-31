@@ -54,8 +54,8 @@ const ProductSidebar = ({ isOpen, onClose, onApplyFilters }) => {
   };
 
   const getCategoryEmoji = (cat) => {
-    const map = { vibradores: '🍆', lencerias: '👙', anales: '🍑', kits: '📦', accesorios: '✨' };
-    return map[cat] || '🎁';
+    const map = { vibradores: '', lencerias: '', anales: '', kits: '', accesorios: '' };
+    return map[cat] || '';
   };
 
   if (!isOpen) return null;
@@ -177,7 +177,7 @@ const ProductSidebar = ({ isOpen, onClose, onApplyFilters }) => {
                    </div>
                  ) : productos.length === 0 ? (
                    <div className="flex-1 flex flex-col items-center justify-center text-center">
-                      <div className="text-6xl mb-6">🐷💤</div>
+                      <div className="text-6xl mb-6"></div>
                       <h2 className="text-2xl font-black text-[#ad1457] uppercase italic mb-2">¡Oink! El Baúl está vacío</h2>
                       <p className="text-[10px] font-bold text-[#f48fb1] uppercase tracking-widest max-w-xs">
                         No hay juguetes que coincidan con estos ahorros. Prueba ajustando tu inversión.

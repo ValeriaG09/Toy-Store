@@ -98,7 +98,7 @@ export default function RoomWrapper({
       
       {/* 
       ========================================================================
-      🛑 CAPA DE FONDO ESTÁTICO (Z-0) - DIORAMA PARALLAX 🛑
+       CAPA DE FONDO ESTÁTICO (Z-0) - DIORAMA PARALLAX 
       ¡ADVERTENCIA DE ESTRUCTURA INTOCABLE!
 
       ESTA ES LA ARQUITECTURA VISUAL DEL CUARTO. Dibuja EXACTAMENTE tres franjas:
@@ -150,7 +150,7 @@ export default function RoomWrapper({
                </div>
                <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent"></div>
 
-               {/* 🛑 LOS JUGUETES 3D ESTÁN FUSIONADOS ESTÁTICAMENTE AL HORIZONTE DEL PISO 🛑 */}
+               {/*  LOS JUGUETES 3D ESTÁN FUSIONADOS ESTÁTICAMENTE AL HORIZONTE DEL PISO  */}
                <div className="absolute top-0 left-0 w-full h-0 z-40">
                   <div className="max-w-7xl mx-auto relative w-full h-0 pointer-events-auto">
                       <PixarBall />
@@ -179,7 +179,7 @@ export default function RoomWrapper({
            {children}
         </div>
 
-        {/* 🛑 SIDEBARS GLOBALES (Ahora dentro del scroll principal) 🛑 */}
+        {/*  SIDEBARS GLOBALES (Ahora dentro del scroll principal)  */}
         <ProductSidebar 
           isOpen={showFilterSidebar} 
           onClose={() => setShowFilterSidebar(false)} 
@@ -197,7 +197,7 @@ export default function RoomWrapper({
           onClose={() => setShowPurposeSidebar(false)} 
         />
 
-        {/* 🛒 CARRITO GLOBAL 🛒 */}
+        {/*  CARRITO GLOBAL  */}
         <CartDrawer 
           isOpen={isCartOpen} 
           onClose={() => setIsCartOpen(false)} 
@@ -206,7 +206,7 @@ export default function RoomWrapper({
         {/* NOTIFICACIÓN DE CARRITO ABANDONADO */}
         <AbandonedCartToast />
 
-        {/* 🛒 BOTÓN FLOTANTE DEL CARRITO 🛒 */}
+        {/*  BOTÓN FLOTANTE DEL CARRITO  */}
         <button 
           onClick={() => setIsCartOpen(true)}
           className={`fixed bottom-8 right-8 z-[150] w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 active:scale-95 transition-all duration-300 group ${totalItems > 0 ? 'scale-100' : 'scale-0'}`}
@@ -221,7 +221,7 @@ export default function RoomWrapper({
           )}
         </button>
 
-        {/* 🤖 CHATBOT GLOBAL 🤖 */}
+        {/*  CHATBOT GLOBAL  */}
         <Chatbot />
         
         {/* Espaciador para no tapar el suelo */}
@@ -366,7 +366,7 @@ function AbandonedCartToast() {
         
         <div className="relative z-10 flex gap-4">
           <div className="w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center text-4xl shrink-0 shadow-inner">
-            🧸
+            
           </div>
           <div>
             <h4 className="text-sm font-black text-[#451a03] uppercase tracking-tight mb-1">¡Vuelve, Vaquero!</h4>

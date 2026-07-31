@@ -16,8 +16,8 @@ const ShapeCloud = ({ src, top, left, height, rotate, delay, opacity = "80" }) =
 );
 
 const FondoToyStory = ({ children }) => {
-  const pene = "/images/custom_pene.svg?v=5";
-  const vulva = "/images/custom_vulva.svg?v=5";
+  const pene = "/images/shape_p.svg?v=5";
+  const vulva = "/images/shape_v.svg?v=5";
 
   return (
     <div className="font-['Comfortaa',_sans-serif] md:font-['Fredoka',_sans-serif] toy-story-bg min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#87CEEB]">

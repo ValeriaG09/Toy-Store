@@ -1,7 +1,7 @@
 const db = require('../src/config/db');
 
 const nuevosProductos = [
-  // 🍆 VIBRADORES (id_categoria: 1)
+  //  VIBRADORES (id_categoria: 1)
   {
     nombre: 'Slinky Flex Pro',
     descripcion: 'Inspirado en el perro más flexible del cuarto. Se estira y vibra en todas las direcciones para alcanzar cualquier rincón de tu patio de juegos.',
@@ -21,7 +21,7 @@ const nuevosProductos = [
     stock: 10
   },
 
-  // 👙 LENCERÍA (id_categoria: 2)
+  //  LENCERÍA (id_categoria: 2)
   {
     nombre: 'Conjunto Vaquera Jessie',
     descripcion: 'Pura adrenalina de rodeo. Con detalles de vaca y encaje rojo pasión. ¡Yee-haw! Prepárate para el duelo al sol.',
@@ -41,7 +41,7 @@ const nuevosProductos = [
     stock: 12
   },
 
-  // 🍑 ANALES (id_categoria: 3)
+  //  ANALES (id_categoria: 3)
   {
     nombre: 'Plug Marcianito Elegido',
     descripcion: '¡El Ganchooo! Ha sido elegido para llevarte a un universo de sensaciones profundas. Suave silicona de otro planeta.',
@@ -61,7 +61,7 @@ const nuevosProductos = [
     stock: 8
   },
 
-  // 📦 KITS (id_categoria: 4)
+  //  KITS (id_categoria: 4)
   {
     nombre: 'Caja Misión Pizza Planeta',
     descripcion: 'Todo lo que un cadete espacial necesita para una entrega a domicilio muy especial. Incluye 3 juguetes sorpresa y un lubricante estelar.',
@@ -81,7 +81,7 @@ const nuevosProductos = [
     stock: 7
   },
 
-  // 🧪 LUBRICANTES (id_categoria: 5)
+  //  LUBRICANTES (id_categoria: 5)
   {
     nombre: 'Aceite de Carreras RC',
     descripcion: 'Acelera de 0 a 100 en sensaciones. Lubricante a base de agua de larga duración para que nada se detenga en la pista.',
@@ -101,7 +101,7 @@ const nuevosProductos = [
     stock: 22
   },
 
-  // ✨ ACCESORIOS (id_categoria: 6)
+  //  ACCESORIOS (id_categoria: 6)
   {
     nombre: 'Esposas Sheriff Woody',
     descripcion: '¡Estás arrestado! Por exceso de belleza. Metal resistente con recubrimiento de peluche para detenciones suaves.',
@@ -123,19 +123,19 @@ const nuevosProductos = [
 ];
 
 async function addProducts() {
-  console.log('🚀 Iniciando inserción de nuevos productos...');
+  console.log(' Iniciando inserción de nuevos productos...');
   for (const p of nuevosProductos) {
     try {
       await db.query(
         'INSERT INTO productos (nombre, descripcion, precio, id_categoria, nivel_discrecion, imagen, stock, activo) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
         [p.nombre, p.descripcion, p.precio, p.id_categoria, p.nivel_discrecion, p.imagen, p.stock]
       );
-      console.log(`✅ Añadido: ${p.nombre}`);
+      console.log(` Añadido: ${p.nombre}`);
     } catch (err) {
-      console.error(`❌ Error con ${p.nombre}:`, err.message);
+      console.error(` Error con ${p.nombre}:`, err.message);
     }
   }
-  console.log('✨ ¡Misión completada! El baúl de Andy está lleno.');
+  console.log(' ¡Misión completada! El baúl de Andy está lleno.');
   process.exit();
 }
 

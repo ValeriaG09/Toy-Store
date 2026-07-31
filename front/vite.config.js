@@ -9,27 +9,32 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/auth': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
       },
       '/productos': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
       },
       '/perfil': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
       },
       '/pedidos': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
       },
       '/uploads': {
-        target: 'http://localhost:5000',
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/vestier': {
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
         secure: false,
       }

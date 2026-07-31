@@ -1,9 +1,9 @@
-# 🚀 Toy Store Backend - Producción con Render & Supabase
+#  Toy Store Backend - Producción con Render & Supabase
 
 Este proyecto ha sido migrado de MySQL a **PostgreSQL** para aprovechar **Supabase** y desplegarse en **Render**. 
 Ya no necesitas XAMPP ni MySQL local. Todo está listo para la nube.
 
-## 🗄️ 1. Configurar Supabase (Base de Datos)
+## ️ 1. Configurar Supabase (Base de Datos)
 
 1. Ve a [Supabase](https://supabase.com/) y crea un nuevo proyecto.
 2. En tu panel de Supabase, ve a **SQL Editor**.
@@ -13,7 +13,7 @@ Ya no necesitas XAMPP ni MySQL local. Todo está listo para la nube.
 6. Busca la sección **Connection string (URI)**.
 7. Copia la URI que empieza con `postgresql://postgres...` y reemplaza `[YOUR-PASSWORD]` por la contraseña que le pusiste a la base de datos. Esta será tu `DATABASE_URL`.
 
-## ☁️ 2. Desplegar en Render (Backend)
+## ️ 2. Desplegar en Render (Backend)
 
 1. Entra a [Render](https://render.com/) y crea un nuevo **Web Service**.
 2. Conecta el repositorio de GitHub donde tienes el código de Toy Store.
@@ -40,13 +40,13 @@ Ya no necesitas XAMPP ni MySQL local. Todo está listo para la nube.
 
 5. Haz clic en **Create Web Service** y espera a que diga "Live".
 
-## 🔗 3. Conectar el Frontend en Vercel
+##  3. Conectar el Frontend en Vercel
 
 1. Ve a tu proyecto de frontend en Vercel.
 2. En **Settings -> Environment Variables**, asegúrate de que la variable `VITE_BACKEND_URL` apunte a la nueva URL que te dio Render (e.g. `https://tu-backend.onrender.com`).
 3. Vuelve a hacer Deploy en Vercel para que tome la nueva variable de entorno.
 
-## 🛠️ Notas sobre el código
+## ️ Notas sobre el código
 
 - Dependencia `mysql2` eliminada, instalada dependencia `pg`.
 - Archivo `src/config/db.js` actualizado para usar PostgreSQL con Pool (`DATABASE_URL`).

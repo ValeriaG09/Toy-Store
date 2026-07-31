@@ -1,7 +1,7 @@
 const db = require('../src/config/db');
 
 async function recreateReviewsTable() {
-  console.log('🏗️ Recreando tabla de reseñas con el esquema gamificado...');
+  console.log('️ Recreando tabla de reseñas con el esquema gamificado...');
   try {
     // 1. Eliminar la tabla antigua
     await db.query("DROP TABLE IF EXISTS resenas");
@@ -21,9 +21,9 @@ async function recreateReviewsTable() {
       )
     `);
     
-    console.log('✅ Tabla "resenas" recreada con éxito.');
+    console.log(' Tabla "resenas" recreada con éxito.');
   } catch (err) {
-    console.error('❌ Error al recrear tabla:', err.message);
+    console.error(' Error al recrear tabla:', err.message);
   }
   process.exit();
 }

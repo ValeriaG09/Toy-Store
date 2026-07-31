@@ -29,7 +29,7 @@ export default function Pagar() {
           
           <div className="text-center mb-10">
             <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl shadow-inner">
-              💰
+              
             </div>
             <h1 className="text-3xl font-[1000] text-[#451a03] uppercase tracking-tight mb-2">¡Casi es Tuyo!</h1>
             <p className="text-xs font-black text-amber-600 uppercase tracking-widest">Pedido #{id} • Pendiente de Pago</p>
@@ -45,7 +45,7 @@ export default function Pagar() {
               {/* Opción Nequi/Daviplata */}
               <div className="bg-white p-6 rounded-2xl border-2 border-amber-200 shadow-sm flex items-center justify-between hover:border-amber-400 transition-all cursor-pointer group">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">📱</div>
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"></div>
                   <div>
                     <h4 className="font-black text-gray-900 uppercase text-sm">Transferencia Directa</h4>
                     <p className="text-[10px] font-bold text-gray-400 uppercase">Nequi o Daviplata</p>
@@ -57,7 +57,7 @@ export default function Pagar() {
               {/* Opción Tarjeta */}
               <div className="bg-white/50 p-6 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-between opacity-60">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-2xl">💳</div>
+                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-2xl"></div>
                   <div>
                     <h4 className="font-black text-gray-400 uppercase text-sm">Tarjeta de Crédito</h4>
                     <p className="text-[10px] font-bold text-gray-300 uppercase">Próximamente</p>
@@ -92,7 +92,7 @@ export default function Pagar() {
           </div>
 
           <div className="mt-12 pt-8 border-t-4 border-dashed border-gray-100 flex items-center justify-center gap-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">🛡️</div>
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">️</div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pago 100% Seguro y Discreto</p>
           </div>
 

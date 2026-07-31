@@ -17,10 +17,10 @@ async function run() {
         'Esposas Sheriff Woody'
       ]
     );
-    console.log('✅ Woody Handcuffs duplicate successfully replaced in the database with Woody Lasso Rope!', res);
+    console.log(' Woody Handcuffs duplicate successfully replaced in the database with Woody Lasso Rope!', res);
     process.exit(0);
   } catch (err) {
-    console.error('❌ Error replacing product:', err);
+    console.error(' Error replacing product:', err);
     process.exit(1);
   }
 }

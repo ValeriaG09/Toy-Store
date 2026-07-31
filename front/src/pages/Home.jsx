@@ -97,9 +97,9 @@ export default function Home() {
       {/* ── HERO ── */}
       <div className="bg-sky-200 relative overflow-hidden">
         <div className="absolute top-6 left-10 text-3xl animate-bounce">⭐</div>
-        <div className="absolute top-10 right-20 text-2xl">❤️</div>
-        <div className="absolute bottom-10 left-32 text-2xl">🚀</div>
-        <div className="absolute top-16 right-40 text-xl">😎</div>
+        <div className="absolute top-10 right-20 text-2xl">️</div>
+        <div className="absolute bottom-10 left-32 text-2xl"></div>
+        <div className="absolute top-16 right-40 text-xl"></div>
 
         <div className="flex flex-col items-center justify-center py-10 px-4 relative">
           <div className="bg-yellow-400 px-10 py-2 rounded-full mb-4 shadow-md">
@@ -151,7 +151,7 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <div className="bg-purple-900 text-center py-4">
         <p className="text-purple-300 text-sm">
-          © 2024 Toy Store — Donde tus juguetes sí cobran vida 🌟
+          © 2024 Toy Store — Donde tus juguetes sí cobran vida 
         </p>
       </div>
 

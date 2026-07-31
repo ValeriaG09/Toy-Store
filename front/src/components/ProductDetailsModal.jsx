@@ -21,10 +21,10 @@ export default function ProductDetailsModal({ product, isOpen, onClose }) {
     setIsSubmitting(true);
     
     const medals = [
-      { name: 'Sheriff del Placer', icon: '🤠', color: 'bg-amber-100 text-amber-700' },
-      { name: 'Explorador Galáctico', icon: '🚀', color: 'bg-purple-100 text-purple-700' },
+      { name: 'Sheriff del Placer', icon: '', color: 'bg-amber-100 text-amber-700' },
+      { name: 'Explorador Galáctico', icon: '', color: 'bg-purple-100 text-purple-700' },
       { name: 'Vaquero de Élite', icon: '⭐', color: 'bg-blue-100 text-blue-700' },
-      { name: 'Centinela de la Noche', icon: '🌙', color: 'bg-indigo-100 text-indigo-700' }
+      { name: 'Centinela de la Noche', icon: '', color: 'bg-indigo-100 text-indigo-700' }
     ];
     
     const randomMedal = medals[Math.floor(Math.random() * medals.length)];
@@ -84,8 +84,8 @@ export default function ProductDetailsModal({ product, isOpen, onClose }) {
   };
 
   const getCategoryEmoji = (cat) => {
-    const map = { vibradores: '🍆', lencerias: '👙', anales: '🍑', kits: '📦', accesorios: '✨' };
-    return map[cat] || '🎁';
+    const map = { vibradores: '', lencerias: '', anales: '', kits: '', accesorios: '' };
+    return map[cat] || '';
   };
 
   const NivelBadge = ({ nivel }) => {
@@ -173,7 +173,7 @@ export default function ProductDetailsModal({ product, isOpen, onClose }) {
             <div className="mb-8 p-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-3xl border-2 border-emerald-100 relative overflow-hidden group">
               <div className="relative z-10">
                 <h4 className="text-[11px] font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <span className="text-lg">🔄</span> Club de los Juguetes Olvidados
+                  <span className="text-lg"></span> Club de los Juguetes Olvidados
                 </h4>
                 <p className="text-[10px] font-bold text-emerald-600 leading-tight mb-4">
                   "Se te está acabando el aceite para la maquinaria, no queremos chirridos en la noche."
@@ -194,7 +194,7 @@ export default function ProductDetailsModal({ product, isOpen, onClose }) {
                   ))}
                 </div>
               </div>
-              <div className="absolute -right-4 -bottom-4 text-6xl opacity-10 group-hover:scale-125 transition-transform duration-700">🛢️</div>
+              <div className="absolute -right-4 -bottom-4 text-6xl opacity-10 group-hover:scale-125 transition-transform duration-700">️</div>
             </div>
           )}
 
@@ -205,7 +205,7 @@ export default function ProductDetailsModal({ product, isOpen, onClose }) {
               className="mb-8 flex items-center gap-3 text-amber-600 hover:text-amber-700 transition-colors group self-start"
             >
               <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-xl group-hover:scale-110 transition-transform shadow-sm">
-                 📐
+                 
               </div>
               <div className="flex flex-col items-start">
                 <span className="text-[10px] font-black uppercase tracking-widest border-b-2 border-amber-200">Probar Talla Virtual</span>
@@ -239,7 +239,7 @@ export default function ProductDetailsModal({ product, isOpen, onClose }) {
           {/* SECCIÓN DE REVIEWS FUNCIONALES */}
           <div className="mt-12 pt-12 border-t-2 border-gray-100">
              <div className="flex items-center justify-between mb-8">
-               <h4 className="text-sm font-black text-[#451a03] uppercase tracking-tighter">Reseñas de la Comunidad 🌟</h4>
+               <h4 className="text-sm font-black text-[#451a03] uppercase tracking-tighter">Reseñas de la Comunidad </h4>
                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                  {userReviews.length} {userReviews.length === 1 ? 'comentario' : 'comentarios'}
                </span>
@@ -273,7 +273,7 @@ export default function ProductDetailsModal({ product, isOpen, onClose }) {
              <div className="space-y-6">
                 {userReviews.length === 0 ? (
                   <div className="text-center py-10 bg-gray-50/50 rounded-[2rem] border-2 border-dashed border-gray-200">
-                    <span className="text-4xl block mb-3">🤠</span>
+                    <span className="text-4xl block mb-3"></span>
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Sé el primer vaquero en dejar su marca</p>
                   </div>
                 ) : (

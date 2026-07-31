@@ -8,7 +8,7 @@ export default function WoodyWallpaper() {
   return (
     <div className="absolute inset-0 flex flex-col pointer-events-none select-none">
       
-      {/* 🛑 CAPA 1: LA CAMISA (Amarillo con Grilla Roja) 🛑 */}
+      {/*  CAPA 1: LA CAMISA (Amarillo con Grilla Roja)  */}
       <div className="relative flex-[1.5] bg-[#FBBF24] overflow-hidden">
         {/* Grilla de líneas rojas finas */}
         <div className="absolute inset-0 opacity-40" 
@@ -23,7 +23,7 @@ export default function WoodyWallpaper() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/5"></div>
       </div>
 
-      {/* 🛑 CAPA 2: LA BANDA ROJA (Divisor de Cinturón / Pañuelo) 🛑 */}
+      {/*  CAPA 2: LA BANDA ROJA (Divisor de Cinturón / Pañuelo)  */}
       <div className="h-4 md:h-6 bg-[#DC2626] relative shadow-[0_4px_10px_rgba(0,0,0,0.2),0_-4px_10px_rgba(0,0,0,0.1)] z-10">
         {/* Textura de costura sutil */}
         <div className="absolute inset-0 opacity-20" 
@@ -31,7 +31,7 @@ export default function WoodyWallpaper() {
         </div>
       </div>
 
-      {/* 🛑 CAPA 3: EL CHALECO (Patrón de Vaca) 🛑 */}
+      {/*  CAPA 3: EL CHALECO (Patrón de Vaca)  */}
       <div className="flex-1 bg-white relative overflow-hidden">
         {/* Patrón de Manchas de Vaca con SVG para máxima nitidez */}
         <svg width="100%" height="100%" className="absolute inset-0 opacity-90">

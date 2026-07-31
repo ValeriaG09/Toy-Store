@@ -142,7 +142,7 @@ export default function GoogleLoginMock() {
           </p>
           {paso > 1 && (
             <div className="mt-3 px-3 py-1 border border-gray-200 rounded-full flex items-center gap-2 text-sm text-gray-700 animate-step-in">
-              <div className="w-5 h-5 rounded-full bg-gray-200 text-[10px] flex items-center justify-center">👤</div>
+              <div className="w-5 h-5 rounded-full bg-gray-200 text-[10px] flex items-center justify-center"></div>
               {form.email}
             </div>
           )}

@@ -1,7 +1,7 @@
 const db = require('../src/config/db');
 
 async function syncImages() {
-  console.log('🔄 Sincronizando nombres de archivos con la DB...');
+  console.log(' Sincronizando nombres de archivos con la DB...');
   try {
     // Mapeo manual de lo que hay en disco vs lo que hay en DB
     const corrections = [
@@ -14,15 +14,15 @@ async function syncImages() {
 
     for (const item of corrections) {
       await db.query('UPDATE productos SET imagen = ? WHERE nombre = ?', [item.imagen, item.nombre]);
-      console.log(`✅ Corregido: ${item.nombre} -> ${item.imagen}`);
+      console.log(` Corregido: ${item.nombre} -> ${item.imagen}`);
     }
 
     // Opcional: Eliminar duplicados si el usuario quiere uno solo
     // Pero por ahora solo arreglamos las rutas.
 
-    console.log('✨ Sincronización completada.');
+    console.log(' Sincronización completada.');
   } catch (err) {
-    console.error('❌ Error:', err.message);
+    console.error(' Error:', err.message);
   }
   process.exit();
 }

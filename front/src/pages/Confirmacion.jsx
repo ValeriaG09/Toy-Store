@@ -53,10 +53,10 @@ export default function Confirmacion() {
           </div>
 
           <div className="mt-12 flex items-center justify-center gap-2 opacity-30 grayscale">
-             <span className="text-2xl">📦</span>
-             <span className="text-2xl">🚀</span>
-             <span className="text-2xl">🤠</span>
-             <span className="text-2xl">🐷</span>
+             <span className="text-2xl"></span>
+             <span className="text-2xl"></span>
+             <span className="text-2xl"></span>
+             <span className="text-2xl"></span>
           </div>
 
         </div>

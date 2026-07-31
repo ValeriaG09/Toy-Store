@@ -118,7 +118,7 @@ export default function GoogleSignupMock() {
         </div>
 
         <div className="flex-1">
-          {error && <p className="text-red-600 text-sm mb-4 bg-red-50 p-2 rounded border border-red-100">⚠️ {error}</p>}
+          {error && <p className="text-red-600 text-sm mb-4 bg-red-50 p-2 rounded border border-red-100">️ {error}</p>}
 
           {paso === 1 && (
             <div className="space-y-4">

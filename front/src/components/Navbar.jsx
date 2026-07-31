@@ -298,7 +298,7 @@ export default function Navbar({ onHeartClick, onStarClick }) {
                   }`}
                 >
                   <span className="text-xl">
-                    {item.path === '/' ? '🏠' : item.path === '/tienda' ? '🛍️' : item.path === '/guia' ? '📖' : item.path === '/vestier' ? '👗' : item.path === '/explora' ? '🌟' : '📬'}
+                    {item.path === '/' ? '' : item.path === '/tienda' ? '️' : item.path === '/guia' ? '' : item.path === '/vestier' ? '' : item.path === '/explora' ? '' : ''}
                   </span>
                   {item.label}
                 </button>

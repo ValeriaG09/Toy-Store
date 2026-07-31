@@ -95,7 +95,7 @@ CREATE TABLE resenas (
 );
 
 INSERT INTO resenas (producto_id, usuario, texto, medalla, icono, color) VALUES 
-(16, 'Sara', 'Increible!!', 'Centinela de la Noche', '🌙', 'bg-indigo-100 text-indigo-700');
+(16, 'Sara', 'Increible!!', 'Centinela de la Noche', '', 'bg-indigo-100 text-indigo-700');
 
 -- Tabla Proveedores
 CREATE TABLE proveedores (
