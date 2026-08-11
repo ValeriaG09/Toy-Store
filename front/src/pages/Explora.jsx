@@ -116,7 +116,7 @@ const resultados = {
     categoria: "Lencería",
     link: "/tienda?cat=lencerias",
     color: "from-emerald-500 to-teal-600",
-  }
+  },
 };
 
 export default function Explora() {
@@ -154,8 +154,7 @@ export default function Explora() {
       fullWallpaper={true}
       wallpaperContent={<AlienSpaceBg />}
     >
-      <div className="min-h-screen relative z-10 flex flex-col items-center justify-center text-center px-4 py-20">
-
+      <div className="min-h-screen relative z-10 flex flex-col items-center justify-center text-center px-4 pt-[42vh] md:pt-[38vh] pb-20">
         <div className="text-6xl mb-4 drop-shadow-2xl">👽</div>
 
         <h1
