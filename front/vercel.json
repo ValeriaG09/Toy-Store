@@ -21,8 +21,8 @@
       "destination": "https://toystore-backend-jz4q.onrender.com/uploads/:path*"
     },
     {
-      "source": "/vestier/:path*",
-      "destination": "https://toystore-backend-jz4q.onrender.com/vestier/:path*"
+      "source": "/vestier/probar",
+      "destination": "https://toystore-backend-jz4q.onrender.com/vestier/probar"
     },
     {
       "source": "/(.*)",
