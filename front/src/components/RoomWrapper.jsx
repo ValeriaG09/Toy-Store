@@ -1,12 +1,15 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import PixarBall from './PixarBall';
 import ToyBlocks from './ToyBlocks';
 import Navbar from './Navbar';
 import LotsoFurImg from '../assets/lotso_fur_texture.png';
 import ProductSidebar from './ProductSidebar';
 import PurposeSidebar from './PurposeSidebar';
+import ConfesionesDrawer from './ConfesionesDrawer';
+import ChatbotWidget from './ChatbotWidget';
 import { AuthContext } from '../context/AuthContext';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 
 /**
  * RoomWrapper: Provee la estructura de "Maqueta" (Diorama 3D)
@@ -21,28 +24,46 @@ export default function RoomWrapper({
   showFooter = false, 
   fullWallpaper = false,
   onHeartClick,
-  onStarClick
+  onStarClick,
+  isMinimal = false,
+  hideNavbar = false
 }) {
   const { usuario } = useContext(AuthContext);
+  const location = useLocation();
   const [showFilterSidebar, setShowFilterSidebar] = useState(false);
   const [showPurposeSidebar, setShowPurposeSidebar] = useState(false);
+  const [showConfesionesDrawer, setShowConfesionesDrawer] = useState(false);
 
-  // Sobrescribimos los clics para que activen las sidebars globales
+  useEffect(() => {
+    const handleOpenConfesiones = () => setShowConfesionesDrawer(true);
+    window.addEventListener('toy_open_confesiones', handleOpenConfesiones);
+    return () => window.removeEventListener('toy_open_confesiones', handleOpenConfesiones);
+  }, []);
+
+  const forceMinimal = isMinimal || location.pathname.startsWith('/admin');
+
+  // Sobrescribimos los clics para que activen las sidebars globales con el mismo diseño lateral minimalista
   const handleHeartClick = () => {
-    if (onHeartClick) {
-      onHeartClick(); // Ejecutamos la lógica original por si acaso (e.j. analytics)
-    }
-    if (usuario) {
-      setShowFilterSidebar(true);
-    }
+    setShowPurposeSidebar(false);
+    setShowConfesionesDrawer(false);
+    setShowFilterSidebar(prev => !prev);
+    if (onHeartClick) onHeartClick();
   };
 
   const handleStarClick = () => {
-    if (onStarClick) {
-      onStarClick();
-    }
-    setShowPurposeSidebar(true);
+    setShowFilterSidebar(false);
+    setShowConfesionesDrawer(false);
+    setShowPurposeSidebar(prev => !prev);
+    if (onStarClick) onStarClick();
   };
+
+  const handleMoonClick = () => {
+    setShowFilterSidebar(false);
+    setShowPurposeSidebar(false);
+    setShowConfesionesDrawer(prev => !prev);
+  };
+
+  const isAnyDrawerOpen = showConfesionesDrawer || showFilterSidebar || showPurposeSidebar;
   
   const getThemeStyles = () => {
     switch (theme) {
@@ -145,12 +166,14 @@ export default function RoomWrapper({
                <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent"></div>
 
                {/* 🛑 LOS JUGUETES 3D ESTÁN FUSIONADOS ESTÁTICAMENTE AL HORIZONTE DEL PISO 🛑 */}
-               <div className="absolute top-0 left-0 w-full h-0 z-40">
-                  <div className="max-w-7xl mx-auto relative w-full h-0 pointer-events-auto">
-                      <PixarBall />
-                      <ToyBlocks />
-                  </div>
-               </div>
+               {!location.pathname.startsWith('/admin') && (
+                 <div className="absolute top-0 left-0 w-full h-0 z-40">
+                    <div className="max-w-7xl mx-auto relative w-full h-0 pointer-events-auto">
+                        <PixarBall />
+                        <ToyBlocks />
+                    </div>
+                 </div>
+               )}
             </div>
           </div>
         )}
@@ -164,10 +187,18 @@ export default function RoomWrapper({
       TRANSPARENTES PARA QUE SE REVELE EL FONDO ESTÁTICO DE ATRÁS.
       ========================================================================
       */}
-      <div className="relative z-10 flex-1 flex flex-col h-full overflow-y-auto overflow-x-hidden">
+      <div className={`relative z-10 flex-1 flex flex-col h-full transition-all duration-300 ${isAnyDrawerOpen ? 'pl-[360px]' : ''}`}>
         
-        {/* NAVBAR GLOBAL INTEGRADA (Solo aparece si no es vistaAdmin, ya que admin tiene su propia Nav) */}
-        <Navbar onHeartClick={handleHeartClick} onStarClick={handleStarClick} />
+        {/* NAVBAR GLOBAL INTEGRADA (Solo aparece si no se solicita ocultarla) */}
+        {!hideNavbar && (
+          <Navbar 
+            onHeartClick={handleHeartClick} 
+            onStarClick={handleStarClick} 
+            onMoonClick={handleMoonClick} 
+            minimal={forceMinimal} 
+            isDrawerOpen={isAnyDrawerOpen}
+          />
+        )}
 
         <div className="flex-1 shrink-0 relative flex flex-col">
            {children}
@@ -181,6 +212,11 @@ export default function RoomWrapper({
         <PurposeSidebar 
           isOpen={showPurposeSidebar} 
           onClose={() => setShowPurposeSidebar(false)} 
+        />
+        <ConfesionesDrawer 
+          isOpen={showConfesionesDrawer} 
+          onClose={() => setShowConfesionesDrawer(false)} 
+          hasSidebar={false}
         />
         
         {/* Espaciador para no tapar el suelo */}
@@ -283,7 +319,7 @@ export default function RoomWrapper({
                    <a href="#" className="hover:text-white transition whitespace-nowrap">Política de tratamiento de datos</a>
                 </div>
                 <div className="text-center lg:text-right uppercase whitespace-nowrap">
-                   Propiedad artística © 2024 TOY STORE • EL LEGADO DE ANDY
+                   Propiedad artística © 2025 TOY STORE • EL LEGADO DE ANDY
                 </div>
              </div>
           </footer>
@@ -307,6 +343,9 @@ export default function RoomWrapper({
           background-repeat: repeat;
         }
       `}} />
+
+      {/* CHATBOT ASISTENTE VIRTUAL GLOBAL - TOYITO */}
+      <ChatbotWidget />
 
     </div>
   );

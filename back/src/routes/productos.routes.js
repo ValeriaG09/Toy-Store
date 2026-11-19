@@ -1,40 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
+const productosController = require('../controllers/productos.controller');
+const { validateProduct } = require('../middlewares/productValidator');
+const verifyToken = require('../middlewares/verifytoken');
 
-// Obtener todos los productos con filtros opcionales
-router.get('/', async (req, res) => {
-  try {
-    const { minPrice, maxPrice, categoria, nivelJuego } = req.query;
-    
-    let query = 'SELECT * FROM productos WHERE 1=1';
-    const params = [];
+/**
+ * Rutas de Productos
+ * Algunas rutas están protegidas por token para asegurar que solo 
+ * personal autorizado (admin) realice cambios en el inventario.
+ */
 
-    if (minPrice) {
-      query += ' AND precio >= ?';
-      params.push(minPrice);
-    }
-    if (maxPrice) {
-      query += ' AND precio <= ?';
-      params.push(maxPrice);
-    }
-    if (categoria && categoria !== 'todos' && categoria !== 'null') {
-      query += ' AND categoria = ?';
-      params.push(categoria);
-    }
-    if (nivelJuego && nivelJuego !== 'todos') {
-      query += ' AND nivel_juego >= ?';
-      params.push(nivelJuego);
-    }
+// Obtener todos los productos (Público)
+router.get('/', productosController.getProductos);
 
-    query += ' ORDER BY created_at DESC';
+// Obtener un producto por ID (Público)
+router.get('/:id', productosController.getProductoById);
 
-    const [rows] = await db.query(query, params);
-    res.json(rows);
-  } catch (error) {
-    console.error('Error al obtener productos:', error);
-    res.status(500).json({ error: 'Error al obtener productos' });
-  }
-});
+// Crear un producto (Privado - Requiere Token)
+router.post('/', verifyToken, validateProduct, productosController.createProducto);
+
+// Actualizar un producto (Privado - Requiere Token)
+router.put('/:id', verifyToken, validateProduct, productosController.updateProducto);
+
+// Eliminar un producto (Privado - Requiere Token)
+router.delete('/:id', verifyToken, productosController.deleteProducto);
 
 module.exports = router;

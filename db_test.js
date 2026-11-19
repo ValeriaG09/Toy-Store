@@ -5,7 +5,7 @@ const db = require('./back/src/config/db');
 async function test() {
   try {
     console.log('--- Probando conexión ---');
-    const [rows] = await db.query('SELECT current_database(), current_user');
+    const [rows] = await db.query('SELECT DATABASE() AS database_name, CURRENT_USER() AS user_name');
     console.log('Database Info:', rows[0]);
 
     console.log('\n--- Columnas de la tabla usuarios ---');

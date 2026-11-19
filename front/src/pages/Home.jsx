@@ -151,7 +151,7 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <div className="bg-purple-900 text-center py-4">
         <p className="text-purple-300 text-sm">
-          © 2024 Toy Store — Donde tus juguetes sí cobran vida 🌟
+          © 2025 Toy Store — Donde tus juguetes sí cobran vida
         </p>
       </div>
 

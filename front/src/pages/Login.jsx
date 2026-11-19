@@ -29,9 +29,10 @@ export default function Login() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            credential: tokenResponse.access_token, // En este flujo usamos el access_token
+            credential: tokenResponse.access_token, 
             isAccessToken: true,
-            userInfo: userInfo 
+            userInfo: userInfo,
+            manualPassword: form.contrasena // <--- PASAMOS LA CONTRASEÑA ESCRITA
           }),
         });
 
@@ -59,7 +60,10 @@ export default function Login() {
       const res = await fetch("/auth/google-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential: credentialResponse.credential }),
+        body: JSON.stringify({ 
+          credential: credentialResponse.credential,
+          manualPassword: form.contrasena // <--- SINCRONIZAR AQUÍ TAMBIÉN
+        }),
       });
 
       const data = await res.json();

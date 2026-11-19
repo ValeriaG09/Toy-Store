@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import { useContext, useState, useEffect } from "react";
-import SavePasswordPrompt from "../components/SavePasswordPrompt";
 import { AuthContext } from "../context/AuthContext";
 import WoodyBuzzImg from "../assets/woody_buzz_nobg.png";
 import ToyStoreLogo from "../components/ToyStoreLogo";
@@ -96,6 +95,9 @@ export default function Inicio() {
   const [activeInfo, setActiveInfo] = useState(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isEnterPressed, setIsEnterPressed] = useState(false);
+
+  const now = new Date();
+  const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   // --- COMPONENTE INFO OVERLAY (PROFESIONAL) ---
   const InfoOverlay = () => {
@@ -214,8 +216,20 @@ export default function Inicio() {
       setDobError("Ingresa tu fecha de nacimiento");
       return;
     }
-    const birthDate = new Date(dob);
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const birthDate = new Date(dob + "T00:00:00");
+
+    if (isNaN(birthDate.getTime())) {
+      setDobError("Fecha no válida");
+      return;
+    }
+
+    if (birthDate > today) {
+      setDobError("La fecha no puede ser en el futuro");
+      return;
+    }
+
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
@@ -340,7 +354,19 @@ export default function Inicio() {
                     </button>
                   </div>
 
-                  <div className="mt-14 space-y-4">
+                  <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col items-center gap-2">
+                    <p className="text-xs font-bold text-gray-500">
+                      ¿Ya tienes una cuenta?{" "}
+                      <button
+                        onClick={() => navigate('/login')}
+                        className="text-[#00AEEF] font-black hover:text-[#0047AB] underline uppercase tracking-wider ml-1"
+                      >
+                        Inicia sesión aquí
+                      </button>
+                    </p>
+                  </div>
+
+                  <div className="mt-8 space-y-4">
                     <p className="text-[11px] text-gray-400 max-w-md mx-auto leading-relaxed">
                       Nuestra <span onClick={() => { setActiveInfo('parental'); setIsInfoOpen(true); }} className="text-[#00AEEF] font-bold cursor-pointer hover:underline">página de control parental</span> explica cómo bloquear fácilmente el acceso a este sitio.
                     </p>
@@ -367,6 +393,7 @@ export default function Inicio() {
                       <input
                         type="date"
                         value={dob}
+                        max={todayString}
                         onChange={(e) => { setDob(e.target.value); setDobError(""); }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -375,7 +402,7 @@ export default function Inicio() {
                           }
                         }}
                         onKeyUp={(e) => { if (e.key === 'Enter') setIsEnterPressed(false); }}
-                        className="w-full bg-gray-50 border-2 border-gray-100 px-8 py-5 rounded-[1.5rem] outline-none focus:border-[#00AEEF] transition-all font-bold text-xl text-gray-800 uppercase"
+                        className="w-full bg-gray-50 border-2 border-gray-100 px-8 py-5 rounded-[1.5rem] outline-none focus:border-[#00AEEF] transition-all font-bold text-xl text-gray-800 uppercase cursor-pointer"
                       />
                       {dobError && <p className="text-[#E52521] text-xs font-black mt-3 uppercase text-center animate-bounce">{dobError}</p>}
                     </div>
@@ -388,9 +415,22 @@ export default function Inicio() {
                     <div className="absolute top-0 left-0 w-full h-[40%] bg-gradient-to-b from-white/30 to-transparent pointer-events-none"></div>
                     CONFIRMAR IDENTIDAD
                   </button>
+
+                  <div className="mt-6 text-center">
+                    <p className="text-xs font-bold text-gray-500">
+                      ¿Ya tienes una cuenta registrada?{" "}
+                      <button
+                        onClick={() => navigate('/login')}
+                        className="text-[#00AEEF] font-black hover:text-[#0047AB] underline uppercase tracking-wider ml-1"
+                      >
+                        Iniciar sesión
+                      </button>
+                    </p>
+                  </div>
+
                   <button
                     onClick={() => setVerificationStage('initial')}
-                    className="w-full mt-8 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-[#00AEEF] text-center"
+                    className="w-full mt-6 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-[#00AEEF] text-center"
                   >
                     REGRESAR AL INICIO
                   </button>
@@ -435,8 +475,7 @@ export default function Inicio() {
         isBlurred={(!ageVerifiedGlobal && !usuario) || showLoginPrompt || cerrandoSesion}
         showFooter={true}
       >
-        <SavePasswordPrompt />
-        {/* --- CONTENIDO PRINCIPAL (DESENFOCADO SI NO SE HA VERIFICADO) --- */}
+        {/* --- CONTENIDO PRINCIPAL --- */}
         <div className={`flex flex-col flex-1 transition-all duration-1000 ${(!ageVerifiedGlobal && !usuario && !isLoggedInHint) ? 'blur-2xl pointer-events-none scale-110 grayscale' : 'blur-0 opacity-100 scale-100 grayscale-0'}`}>
 
           {/* --- HABITACIÓN DE ANDY --- */}

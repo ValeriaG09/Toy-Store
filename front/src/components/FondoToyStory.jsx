@@ -15,14 +15,20 @@ const ShapeCloud = ({ src, top, left, height, rotate, delay, opacity = "80" }) =
   </div>
 );
 
-const FondoToyStory = ({ children }) => {
+const FondoToyStory = ({ children, fullLayout = false, variant = 'sky' }) => {
   const pene = "/images/custom_pene.svg?v=5";
   const vulva = "/images/custom_vulva.svg?v=5";
 
+  const isPinterest = variant === 'pinterest';
+  const bgClass = isPinterest ? 'bg-[#f4f9fd]' : 'bg-[#87CEEB]';
+  const heightClass = isPinterest ? 'h-screen max-h-screen overflow-hidden' : 'min-h-screen';
+
   return (
-    <div className="font-['Comfortaa',_sans-serif] md:font-['Fredoka',_sans-serif] toy-story-bg min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#87CEEB]">
+    <div className={`font-fredoka toy-story-bg relative overflow-hidden ${bgClass} ${heightClass} ${
+      fullLayout ? 'w-full flex' : 'flex items-center justify-center p-4'
+    }`}>
       {/* Nubes Especiales Transparentes (Archivos Gráficos Originales) */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 pointer-events-none">
         
         {/* Capa de fondo */}
         <ShapeCloud src={vulva} top="8%" left="15%" height={100} rotate={-15} delay="0s" opacity="25" />
@@ -55,8 +61,8 @@ const FondoToyStory = ({ children }) => {
 
       </div>
       
-      {/* Contenido (Login/Registro) */}
-      <div className="relative z-10 w-full max-w-md">
+      {/* Contenido */}
+      <div className={`relative z-10 w-full ${fullLayout ? (isPinterest ? 'h-full max-h-screen flex flex-col overflow-hidden' : 'min-h-screen flex') : 'max-w-md'}`}>
         {children}
       </div>
     </div>

@@ -1,0 +1,85 @@
+[
+  {
+    "id": "conf-1",
+    "autor": "Anónimo",
+    "autorUsuario": null,
+    "esAnonimo": true,
+    "avatarHat": null,
+    "fotoPerfil": null,
+    "tag": "En pareja",
+    "tiempo": "hace 2 horas",
+    "texto": "Anoche probamos el vibrador Cowgirl en pareja por primera vez... la vibración profunda nos dejó sin palabras. ¡100% recomendado si quieren salir de la rutina y conectar a otro nivel!",
+    "likes": 25,
+    "liked": true,
+    "comentarios": [
+      {
+        "id": "c-1",
+        "autor": "Anónimo",
+        "texto": "¡Totalmente de acuerdo! Las distintas intensidades son increíbles.",
+        "tiempo": "hace 1 hora"
+      }
+    ]
+  },
+  {
+    "id": "conf-2",
+    "autor": "Anónimo",
+    "autorUsuario": null,
+    "esAnonimo": true,
+    "avatarHat": null,
+    "fotoPerfil": null,
+    "tag": "Fantasía cumplida",
+    "tiempo": "hace 5 horas",
+    "texto": "Siempre tuve curiosidad por los plugs con joya pero me daba mucha pena pedir uno. Me atreví aprovechando el empaque 100% discreto y la experiencia ha sido una maravilla absoluta. No tengan miedo a explorar.",
+    "likes": 39,
+    "liked": true,
+    "comentarios": [
+      {
+        "id": "c-2",
+        "autor": "Comunidad Toy Store",
+        "texto": "¿Qué tamaño recomendaste para empezar?",
+        "tiempo": "hace 3 horas"
+      },
+      {
+        "id": "c-3",
+        "autor": "Anónimo",
+        "texto": "El tamaño pequeño con lubricante a base de agua es perfecto para comenzar.",
+        "tiempo": "hace 2 horas"
+      }
+    ]
+  },
+  {
+    "id": "conf-3",
+    "autor": "Anónimo",
+    "autorUsuario": null,
+    "esAnonimo": true,
+    "avatarHat": null,
+    "fotoPerfil": null,
+    "tag": "Juguete favorito",
+    "tiempo": "ayer",
+    "texto": "La lencería Cowgirl combinada con los aceites térmicos de fresa cambió por completo nuestra noche de aniversario. Lo mejor es que nadie en casa supo qué era el paquete.",
+    "likes": 19,
+    "liked": false,
+    "comentarios": []
+  },
+  {
+    "id": "conf-4",
+    "autor": "Anónimo",
+    "autorUsuario": null,
+    "esAnonimo": true,
+    "avatarHat": null,
+    "fotoPerfil": null,
+    "tag": "Curiosidad",
+    "tiempo": "hace 2 días",
+    "texto": "Me arriesgué pidiendo la Mystery Box sorpresa sin saber qué venía y fue la mejor decisión del mes. Me llegó un producto que superó todas mis expectativas.",
+    "likes": 45,
+    "liked": false,
+    "comentarios": [
+      {
+        "id": "c-4",
+        "autor": "ToyLover",
+        "texto": "¡Las cajas sorpresa son lo más divertido de Toy Store!",
+        "tiempo": "hace 1 día"
+      }
+    ]
+  }
+]

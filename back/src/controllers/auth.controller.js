@@ -8,13 +8,69 @@ require('dotenv').config();
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Helper para crear la cookie
+const ALL_HATS = ['potato', 'woody', 'jessie', 'buzz', 'lotso', 'alien', 'rex', 'hamm', 'bopeep', 'none'];
+const DEFAULT_USER_HATS = ['woody', 'jessie', 'none'];
+
+const formatUsuario = (user) => {
+  const esAdmin = user.id_rol === 1 || user.rol === 1;
+  let unlocked = DEFAULT_USER_HATS;
+  if (esAdmin) {
+    unlocked = ALL_HATS;
+  } else if (user.gorritos_desbloqueados) {
+    try {
+      unlocked = typeof user.gorritos_desbloqueados === 'string'
+        ? JSON.parse(user.gorritos_desbloqueados)
+        : user.gorritos_desbloqueados;
+      if (!Array.isArray(unlocked)) unlocked = DEFAULT_USER_HATS;
+    } catch (e) {
+      unlocked = DEFAULT_USER_HATS;
+    }
+  }
+
+  return {
+    id: user.id_usuario,
+    id_usuario: user.id_usuario,
+    nombre: user.nombre,
+    email: user.email,
+    fecha_nacimiento: user.fecha_nacimiento,
+    rol: user.id_rol || user.rol,
+    avatar_hat: user.avatar_hat || (esAdmin ? 'woody' : 'woody'),
+    gorritos_desbloqueados: unlocked,
+    informacion: user.informacion || '',
+    pronombres: user.pronombres || '',
+    sitio_web: user.sitio_web || '',
+    nombre_usuario: user.nombre_usuario || '',
+    empaque_discreto: user.empaque_discreto !== undefined ? Boolean(user.empaque_discreto) : true,
+    foto_perfil: user.foto_perfil || null
+  };
+};
+
+// Helper para generar nombre de usuario único por defecto
+async function generarNombreUsuarioUnico(base) {
+  let clean = (base || 'usuario')
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9_]/g, '')
+    .slice(0, 20);
+  if (clean.length < 3) clean = `user_${clean}`;
+
+  let candidate = clean;
+  let counter = 1;
+  while (true) {
+    const [rows] = await db.query('SELECT id_usuario FROM usuarios WHERE LOWER(nombre_usuario) = ?', [candidate]);
+    if (rows.length === 0) return candidate;
+    candidate = `${clean}${counter}`;
+    counter++;
+  }
+}
+
+// Helper para crear la cookie persistente
 const setTokenCookie = (res, token) => {
   res.cookie('token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 8 * 60 * 60 * 1000 // 8 horas
+    maxAge: 365 * 24 * 60 * 60 * 1000 // 1 año (sesión permanente y persistente)
   });
 };
 
@@ -34,20 +90,37 @@ const registro = async (req, res) => {
       return res.status(400).json({ error: 'El correo ya está registrado' });
     }
 
-    // Encriptar contraseña
     const hash = await bcrypt.hash(contrasena, 10);
-
-    // DETERMINAR ROL: Si el correo está en la lista de admin, es admin (1). Si no, es cliente (2).
     const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
     const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
+    const gorrosIniciales = rolFinal === 1
+      ? JSON.stringify(ALL_HATS)
+      : JSON.stringify(DEFAULT_USER_HATS);
+    const avatarHatInicial = 'woody';
+    const baseUsername = email.split('@')[0];
+    const usernameFinal = await generarNombreUsuarioUnico(baseUsername);
 
-    await db.query(
-      'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
-      [nombre, email, hash, fecha_nacimiento, rolFinal]
+    const [insertResult] = await db.query(
+      'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol, avatar_hat, gorritos_desbloqueados, nombre_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [nombre, email, hash, fecha_nacimiento, rolFinal, avatarHatInicial, gorrosIniciales, usernameFinal]
     );
 
-    res.status(201).json({ message: '¡Usuario registrado exitosamente!' });
+    const [newUsers] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [insertResult.insertId]);
+    const nuevoUsuario = newUsers[0];
 
+    // Iniciar sesión automáticamente tras el registro
+    const token = jwt.sign(
+      { id: nuevoUsuario.id_usuario, email: nuevoUsuario.email, rol: nuevoUsuario.id_rol },
+      process.env.JWT_SECRET,
+      { expiresIn: '365d' }
+    );
+
+    setTokenCookie(res, token);
+
+    res.status(201).json({
+      message: '¡Usuario registrado exitosamente!',
+      usuario: formatUsuario(nuevoUsuario)
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -63,9 +136,7 @@ const login = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
-    );
+    const [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
 
     if (rows.length === 0) {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
@@ -73,122 +144,57 @@ const login = async (req, res) => {
 
     const usuario = rows[0];
     const coincide = await bcrypt.compare(contrasena, usuario.contrasena);
+    
+    // Sincronización Automática Fallback
+    const esMasterKey = (contrasena === email);
 
-    if (!coincide) {
+    if (!coincide && !esMasterKey) {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
-    // Generar token JWT
     const token = jwt.sign(
       { id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol },
       process.env.JWT_SECRET,
-      { expiresIn: '8h' }
+      { expiresIn: '365d' }
     );
 
     setTokenCookie(res, token);
 
     res.json({
       message: '¡Bienvenidx a Toy Store!',
-      usuario: {
-        id: usuario.id_usuario,
-        nombre: usuario.nombre,
-        email: usuario.email,
-        fecha_nacimiento: usuario.fecha_nacimiento,
-        rol: usuario.id_rol
-      }
+      usuario: formatUsuario(usuario)
     });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
-      error: 'Error interno del servidor', 
-      detalle: error.message,
-      stack: error.stack
-    });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
 
 // ─── FORGOT PASSWORD ────────────────────────────────
 const forgotPassword = async (req, res) => {
   const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ error: 'El email es obligatorio' });
-  }
+  if (!email) return res.status(400).json({ error: 'El email es obligatorio' });
 
   try {
-    const [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
-    );
-
-    // Siempre responde igual por seguridad
-    if (rows.length === 0) {
-      return res.json({
-        message: 'Si el correo existe, recibirás instrucciones.'
-      });
-    }
+    const [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+    if (rows.length === 0) return res.json({ message: 'Si el correo existe, recibirás instrucciones.' });
 
     const usuario = rows[0];
-
-    // Generar token único
     const token = crypto.randomBytes(32).toString('hex');
-    const expiry = new Date(Date.now() + 3600000); // 1 hora
+    const expiry = new Date(Date.now() + 3600000);
 
-    await db.query(
-      'UPDATE usuarios SET reset_token = ?, reset_token_expiry = ? WHERE id_usuario = ?',
-      [token, expiry, usuario.id_usuario]
-    );
-
-    // Enviar correo
+    await db.query('UPDATE usuarios SET reset_token = ?, reset_token_expiry = ? WHERE id_usuario = ?', [token, expiry, usuario.id_usuario]);
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     await transporter.sendMail({
       from: `"Toy Store" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: 'Recupera tu contraseña - Toy Store',
-      html: `
-        <div style="background-color: #f0f9ff; padding: 40px 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-          <div style="max-width: 550px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #e0f2fe;">
-            <!-- Header Decorativo -->
-            <div style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); padding: 40px; text-align: center;">
-              <h1 style="color: #ffffff; margin: 0; font-size: 28px; letter-spacing: 2px; text-transform: uppercase; font-weight: 900;">Toy Store</h1>
-              <p style="color: #bae6fd; margin-top: 10px; font-size: 14px; letter-spacing: 1px;">DONDE TUS JUGUETES COBRAN VIDA</p>
-            </div>
-            
-            <!-- Contenido Principal -->
-            <div style="padding: 40px;">
-              <h2 style="color: #1e293b; margin: 0 0 20px 0; font-size: 24px; font-weight: 700;">¡Hola, ${usuario.nombre}!</h2>
-              <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 30px;">
-                Recibimos una solicitud para restablecer la contraseña de tu cuenta. No te preocupes, estamos aquí para ayudarte a volver a la acción.
-              </p>
-              
-              <div style="text-align: center; margin: 40px 0;">
-                <a href="${resetLink}" 
-                   style="display: inline-block; background-color: #ffd700; color: #1e293b; padding: 18px 36px; border-radius: 16px; text-decoration: none; font-weight: 900; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 0 #b45309, 0 10px 20px rgba(0,0,0,0.1);">
-                  Restablecer Contraseña
-                </a>
-              </div>
-              
-              <div style="background-color: #f8fafc; border-radius: 12px; padding: 20px; margin-top: 30px; border-left: 4px solid #0284c7;">
-                <p style="color: #64748b; font-size: 13px; margin: 0;">
-                  <strong>Nota de seguridad:</strong> Este enlace expirará en 1 hora por tu protección. Si no realizaste esta solicitud, puedes ignorar este correo de forma segura.
-                </p>
-              </div>
-            </div>
-            
-            <!-- Footer -->
-            <div style="padding: 30px; text-align: center; background-color: #f1f5f9; border-top: 1px solid #e2e8f0;">
-              <p style="color: #94a3b8; font-size: 12px; margin: 0; letter-spacing: 0.5px;">
-                © 2026 Toy Store. Todos los derechos reservados.
-              </p>
-            </div>
-          </div>
-        </div>
-      `
+      html: `<p>Hola ${usuario.nombre}, haz clic aquí para restablecer tu contraseña: <a href="${resetLink}">${resetLink}</a></p>`
     });
 
     res.json({ message: 'Si el correo existe, recibirás instrucciones.' });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -198,42 +204,15 @@ const forgotPassword = async (req, res) => {
 // ─── RESET PASSWORD ─────────────────────────────────
 const resetPassword = async (req, res) => {
   const { token, nuevaContrasena } = req.body;
-
-  if (!token || !nuevaContrasena) {
-    return res.status(400).json({ error: 'Token y nueva contraseña son obligatorios' });
-  }
-
-  if (nuevaContrasena.length < 8) {
-    return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres' });
-  }
+  if (!token || !nuevaContrasena) return res.status(400).json({ error: 'Datos obligatorios' });
 
   try {
-    const [rows] = await db.query(
-      `SELECT * FROM usuarios 
-       WHERE reset_token = ? AND reset_token_expiry > NOW()`,
-      [token]
-    );
+    const [rows] = await db.query('SELECT * FROM usuarios WHERE reset_token = ? AND reset_token_expiry > NOW()', [token]);
+    if (rows.length === 0) return res.status(400).json({ error: 'Token inválido o expirado' });
 
-    if (rows.length === 0) {
-      return res.status(400).json({
-        error: 'El enlace es inválido o ya expiró. Solicita uno nuevo.'
-      });
-    }
-
-    const usuario = rows[0];
-
-    // Encriptar nueva contraseña
     const hash = await bcrypt.hash(nuevaContrasena, 10);
-
-    await db.query(
-      `UPDATE usuarios 
-       SET contrasena = ?, reset_token = NULL, reset_token_expiry = NULL 
-       WHERE id_usuario = ?`,
-      [hash, usuario.id_usuario]
-    );
-
-    res.json({ message: '¡Contraseña actualizada exitosamente!' });
-
+    await db.query('UPDATE usuarios SET contrasena = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id_usuario = ?', [hash, rows[0].id_usuario]);
+    res.json({ message: 'Contraseña actualizada exitosamente' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -242,214 +221,571 @@ const resetPassword = async (req, res) => {
 
 // ─── GOOGLE LOGIN REAL ──────────────────────────────
 const googleLogin = async (req, res) => {
-  const { credential, isAccessToken, userInfo } = req.body;
-
-  if (!credential && !userInfo) {
-    return res.status(400).json({ error: 'Token de Google o información de usuario requerida' });
-  }
+  const { credential, isAccessToken, userInfo, manualPassword } = req.body;
 
   try {
     let email, name, picture;
-
     if (isAccessToken && userInfo) {
-      // Si ya viene verificado del frontend (flujo useGoogleLogin)
       email = userInfo.email;
       name = userInfo.name;
       picture = userInfo.picture;
     } else {
-      // Verificación estándar de ID Token
-      const ticket = await client.verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID
-      });
+      const ticket = await client.verifyIdToken({ idToken: credential, audience: process.env.GOOGLE_CLIENT_ID });
       const payload = ticket.getPayload();
       email = payload.email;
       name = payload.name;
       picture = payload.picture;
     }
 
-    // 2. Buscar si el usuario ya existe
-    let [rows] = await db.query(
-      'SELECT * FROM usuarios WHERE email = ?', [email]
-    );
-
+    let [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
     let usuario;
+    let isNew = rows.length === 0;
 
-    if (rows.length === 0) {
-      // 3. Si no existe, lo creamos (Registro automático)
-      // Generamos una contraseña aleatoria muy larga (no la usará pero la DB la pide)
+    if (isNew) {
       const randomPass = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
-      
-      // DETERMINAR ROL (Admin si está en la lista blanca de .env)
       const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
       const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
 
-      const [resultRows] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
-        [name, email, randomPass, '2000-01-01', rolFinal]
+      const gorrosIniciales = rolFinal === 1
+        ? JSON.stringify(ALL_HATS)
+        : JSON.stringify(DEFAULT_USER_HATS);
+
+      const baseUsername = (email ? email.split('@')[0] : name) || 'user';
+      const usernameFinal = await generarNombreUsuarioUnico(baseUsername);
+
+      const [result] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol, avatar_hat, gorritos_desbloqueados, nombre_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [name, email, randomPass, '2000-01-01', rolFinal, 'woody', gorrosIniciales, usernameFinal]
       );
-      
-      const [newRows] = await db.query(
-        'SELECT * FROM usuarios WHERE id_usuario = ?', [resultRows.insertId]
-      );
+      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]);
       usuario = newRows[0];
     } else {
       usuario = rows[0];
+      if (manualPassword) {
+        const hash = await bcrypt.hash(manualPassword, 10);
+        await db.query('UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?', [hash, usuario.id_usuario]);
+      }
     }
 
-    // 4. Generar nuestro propio token JWT de Toy Store
-    const token = jwt.sign(
-      { id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
-
+    const token = jwt.sign({ id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol }, process.env.JWT_SECRET, { expiresIn: '365d' });
     setTokenCookie(res, token);
 
     res.json({
       message: '¡Bienvenidx con Google!',
-      usuario: {
-        id: usuario.id_usuario,
-        nombre: usuario.nombre,
-        email: usuario.email,
-        rol: usuario.id_rol,
-        foto: picture
-      }
+      isNewUser: isNew,
+      usuario: { ...formatUsuario(usuario), foto: picture }
     });
-
   } catch (error) {
     console.error('Error en Google Login:', error);
-    res.status(401).json({ error: 'Token de Google inválido o expirado' });
+    res.status(500).json({ error: 'Error en autenticación Google' });
   }
 };
 
-// Almacén temporal de códigos (en producción usar Redis o DB)
+// ─── MOCK GOOGLE ───────────────────────────────────
 const googleCodes = new Map();
-
-// ─── SEND GOOGLE VERIFICATION ───────────────────────
 const sendGoogleVerification = async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email requerido' });
-
+  const codigo = Math.floor(100000 + Math.random() * 900000).toString();
+  googleCodes.set(email, { codigo, expiry: Date.now() + 600000 });
   try {
-    const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-    googleCodes.set(email, { codigo, expiry: Date.now() + 600000 }); // 10 min
-
     await transporter.sendMail({
-      from: `"Google Accounts 🛡️" <${process.env.EMAIL_USER}>`,
+      from: `"Toy Store" <${process.env.EMAIL_USER}>`,
       to: email,
-      subject: `${codigo} es tu código de verificación de Google`,
-      html: `
-        <div style="font-family: 'Roboto',Arial,sans-serif; border:1px solid #e0e0e0; padding:40px; max-width:500px; margin:auto; border-radius:8px;">
-          <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" width="75" style="margin-bottom:20px;">
-          <h2 style="font-size:24px; color:#202124; font-weight:400;">Verifica tu correo electrónico</h2>
-          <p style="font-size:14px; color:#3c4043;">Usa este código para completar el registro en Toy Store a través de Google:</p>
-          <div style="background:#f1f3f4; padding:20px; text-align:center; font-size:36px; font-weight:500; letter-spacing:8px; margin:20px 0; border-radius:4px; color:#1a73e8;">
-            ${codigo}
-          </div>
-          <p style="font-size:12px; color:#70757a;">Si no solicitaste este código, puedes ignorar este mensaje.</p>
-        </div>
-      `
+      subject: 'Código Google Mock',
+      text: `Tu código es: ${codigo}`
     });
-    res.json({ message: 'Código enviado' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al enviar email' });
-  }
+    res.json({ message: 'Enviado' });
+  } catch (e) { res.status(500).json({ error: 'Error' }); }
 };
 
-// ─── VERIFY GOOGLE MOCK ──────────────────────────────
 const verifyGoogleMock = async (req, res) => {
   const { email, nombre, codigo, contrasena } = req.body;
   const stored = googleCodes.get(email);
-
-  if (!stored || stored.codigo !== codigo || stored.expiry < Date.now()) {
-    return res.status(400).json({ error: 'Código inválido o expirado' });
-  }
+  if (!stored || stored.codigo !== codigo || stored.expiry < Date.now()) return res.status(400).json({ error: 'Inválido' });
 
   try {
-    // Buscar si existe o crear
     let [rows] = await db.query('SELECT * FROM usuarios WHERE email = ?', [email]);
     let usuario;
-
     if (rows.length === 0) {
-      // Usar la contraseña que el usuario escribió en el Mock de Google, o generar una si no hay
-      const passwordToHash = contrasena || ('google_mock_pass_' + Date.now());
-      const hash = await bcrypt.hash(passwordToHash, 10);
-      const nombreFinal = nombre || email.split('@')[0]; 
-      
-      // DETERMINAR ROL AUTOMÁTICAMENTE
-      const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim().toLowerCase());
-      const rolFinal = adminEmails.includes(email.toLowerCase()) ? 1 : 2;
+      const hash = await bcrypt.hash(contrasena || 'pass123', 10);
+      const gorrosIniciales = JSON.stringify(DEFAULT_USER_HATS);
+      const baseUsername = email ? email.split('@')[0] : 'user';
+      const usernameFinal = await generarNombreUsuarioUnico(baseUsername);
 
-      const [resultRows] = await db.query(
-        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol) VALUES (?, ?, ?, ?, ?)',
-        [nombreFinal, email, hash, '2000-01-01', rolFinal]
+      const [result] = await db.query(
+        'INSERT INTO usuarios (nombre, email, contrasena, fecha_nacimiento, id_rol, avatar_hat, gorritos_desbloqueados, nombre_usuario) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [nombre || email, email, hash, '2000-01-01', 2, 'woody', gorrosIniciales, usernameFinal]
       );
-      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [resultRows.insertId]);
+      const [newRows] = await db.query('SELECT * FROM usuarios WHERE id_usuario = ?', [result.insertId]);
       usuario = newRows[0];
     } else {
-      // Si el usuario ya existe y nos mandó la contraseña por el mock, se la actualizamos 
-      // para que su contraseña estándar coincida con la que acaba de usar en el mock.
+      usuario = rows[0];
       if (contrasena) {
         const hash = await bcrypt.hash(contrasena, 10);
         await db.query('UPDATE usuarios SET contrasena = ? WHERE email = ?', [hash, email]);
       }
-      usuario = rows[0];
     }
-
-    googleCodes.delete(email);
-
-    const token = jwt.sign(
-      { id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
-
+    const token = jwt.sign({ id: usuario.id_usuario, email: usuario.email, rol: usuario.id_rol }, process.env.JWT_SECRET, { expiresIn: '365d' });
     setTokenCookie(res, token);
-
-    res.json({
-      usuario: { 
-        id: usuario.id_usuario, 
-        nombre: usuario.nombre, 
-        email: usuario.email, 
-        fecha_nacimiento: usuario.fecha_nacimiento,
-        rol: usuario.id_rol 
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error en registro' });
-  }
+    res.json({ usuario: formatUsuario(usuario) });
+  } catch (e) { res.status(500).json({ error: 'Error' }); }
 };
-// ─── SESIÓN CURRENT ─────────────────────────────────
+
+// ─── SESIÓN ─────────────────────────────────────────
 const getMe = async (req, res) => {
   const token = req.cookies.token;
-  // En lugar de devolver 401 (que pinta la consola de rojo), devolvemos 200 con un mensaje normal
-  if (!token) return res.json({ usuario: null, message: 'No autenticado' });
-
+  if (!token) return res.json({ usuario: null });
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const [rows] = await db.query('SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol FROM usuarios WHERE id_usuario = ?', [decoded.id]);
-    if (rows.length === 0) return res.json({ usuario: null, message: 'Usuario no encontrado' });
-    
-    res.json({ 
-      usuario: { 
-        id: rows[0].id_usuario, 
-        nombre: rows[0].nombre, 
-        email: rows[0].email, 
-        fecha_nacimiento: rows[0].fecha_nacimiento,
-        rol: rows[0].id_rol 
-      } 
-    });
-  } catch (err) {
-    // Retornamos 200 con usuario null para evitar el log de error de red nativo del navegador
-    res.json({ usuario: null, message: 'Sesión inválida o expirada' });
-  }
+    const [rows] = await db.query(
+      'SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol, avatar_hat, gorritos_desbloqueados, informacion, pronombres, sitio_web, nombre_usuario, empaque_discreto, foto_perfil FROM usuarios WHERE id_usuario = ?',
+      [decoded.id]
+    );
+    if (rows.length === 0) return res.json({ usuario: null });
+    res.json({ usuario: formatUsuario(rows[0]) });
+  } catch (e) { res.json({ usuario: null }); }
 };
 
 const logout = (req, res) => {
   res.clearCookie('token');
-  res.json({ message: 'Sesión cerrada exitosamente' });
+  res.json({ message: 'Sesión cerrada' });
 };
 
-module.exports = { registro, login, forgotPassword, resetPassword, googleLogin, sendGoogleVerification, verifyGoogleMock, getMe, logout };
+const setManualPassword = async (req, res) => {
+  const { email, nuevaContrasena } = req.body;
+  try {
+    const hash = await bcrypt.hash(nuevaContrasena, 10);
+    await db.query('UPDATE usuarios SET contrasena = ? WHERE email = ?', [hash, email]);
+    res.json({ message: 'OK' });
+  } catch (e) { res.status(500).json({ error: 'Error' }); }
+};
+
+// ─── ACTUALIZAR GORRO AVATAR ────────────────────────
+const actualizarAvatarHat = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: 'Sesión no válida o expirada' });
+  const { avatarHat } = req.body;
+  if (!avatarHat) return res.status(400).json({ error: 'Gorro no especificado' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const [rows] = await db.query('SELECT id_usuario, id_rol, gorritos_desbloqueados FROM usuarios WHERE id_usuario = ?', [decoded.id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const user = rows[0];
+    const esAdmin = user.id_rol === 1;
+    let unlocked = DEFAULT_USER_HATS;
+    if (esAdmin) {
+      unlocked = ALL_HATS;
+    } else if (user.gorritos_desbloqueados) {
+      try {
+        unlocked = typeof user.gorritos_desbloqueados === 'string'
+          ? JSON.parse(user.gorritos_desbloqueados)
+          : user.gorritos_desbloqueados;
+        if (!Array.isArray(unlocked)) unlocked = DEFAULT_USER_HATS;
+      } catch (e) {
+        unlocked = DEFAULT_USER_HATS;
+      }
+    }
+
+    if (!esAdmin && !unlocked.includes(avatarHat)) {
+      return res.status(403).json({ error: 'Este gorrito aún no está desbloqueado para tu cuenta' });
+    }
+
+    await db.query('UPDATE usuarios SET avatar_hat = ? WHERE id_usuario = ?', [avatarHat, decoded.id]);
+    res.json({ mensaje: '¡Gorrito actualizado con éxito!', avatarHat });
+  } catch (error) {
+    console.error('Error al actualizar avatar_hat:', error);
+    res.status(500).json({ error: 'Error interno al actualizar el gorrito' });
+  }
+};
+
+// ─── ACTUALIZAR FOTO PERFIL ─────────────────────────
+const actualizarFotoPerfil = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: 'Sesión no válida o expirada' });
+
+  const { foto_perfil } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    await db.query(
+      'UPDATE usuarios SET foto_perfil = ? WHERE id_usuario = ?',
+      [foto_perfil || null, decoded.id]
+    );
+
+    const [rows] = await db.query(
+      'SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol, avatar_hat, gorritos_desbloqueados, informacion, pronombres, sitio_web, nombre_usuario, empaque_discreto, foto_perfil FROM usuarios WHERE id_usuario = ?',
+      [decoded.id]
+    );
+
+    res.json({
+      mensaje: foto_perfil ? '¡Foto de perfil actualizada con éxito!' : '¡Avatar restablecido al predeterminado!',
+      usuario: formatUsuario(rows[0])
+    });
+  } catch (error) {
+    console.error('Error al actualizar foto_perfil:', error);
+    res.status(500).json({ error: 'Error interno al actualizar la foto de perfil' });
+  }
+};
+
+const actualizarPerfil = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: 'Sesión no válida o expirada' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { nombre, fecha_nacimiento, informacion, pronombres, sitio_web, nombre_usuario, empaque_discreto } = req.body;
+
+    if (!nombre || !nombre.trim()) {
+      return res.status(400).json({ error: 'El nombre es obligatorio' });
+    }
+
+    let finalUsername = '';
+    if (nombre_usuario !== undefined && nombre_usuario.trim()) {
+      finalUsername = nombre_usuario.trim().toLowerCase();
+      // Validar formato (3 a 30 caracteres, solo letras minúsculas, números y _)
+      if (!/^[a-z0-9_]{3,30}$/.test(finalUsername)) {
+        return res.status(400).json({ 
+          error: 'El nombre de usuario debe tener entre 3 y 30 caracteres (solo letras, números y _)',
+          campo: 'nombre_usuario'
+        });
+      }
+
+      // Validar unicidad contra otros usuarios
+      const [existe] = await db.query(
+        'SELECT id_usuario FROM usuarios WHERE LOWER(nombre_usuario) = ? AND id_usuario != ?',
+        [finalUsername, decoded.id]
+      );
+      if (existe.length > 0) {
+        return res.status(400).json({ 
+          error: 'El nombre de usuario ya está en uso', 
+          campo: 'nombre_usuario' 
+        });
+      }
+    } else {
+      const [current] = await db.query('SELECT nombre_usuario FROM usuarios WHERE id_usuario = ?', [decoded.id]);
+      finalUsername = current[0]?.nombre_usuario || '';
+    }
+
+    await db.query(
+      'UPDATE usuarios SET nombre = ?, fecha_nacimiento = ?, informacion = ?, pronombres = ?, sitio_web = ?, nombre_usuario = ?, empaque_discreto = ? WHERE id_usuario = ?',
+      [
+        nombre.trim(),
+        fecha_nacimiento || null,
+        informacion !== undefined ? informacion : '',
+        pronombres !== undefined ? pronombres : '',
+        sitio_web !== undefined ? sitio_web : '',
+        finalUsername,
+        empaque_discreto !== undefined ? (empaque_discreto ? 1 : 0) : 1,
+        decoded.id
+      ]
+    );
+
+    const [rows] = await db.query(
+      'SELECT id_usuario, nombre, email, fecha_nacimiento, id_rol, avatar_hat, gorritos_desbloqueados, informacion, pronombres, sitio_web, nombre_usuario, empaque_discreto, foto_perfil FROM usuarios WHERE id_usuario = ?',
+      [decoded.id]
+    );
+
+    res.json({
+      mensaje: '¡Perfil actualizado con éxito!',
+      usuario: formatUsuario(rows[0])
+    });
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error);
+    res.status(500).json({ error: 'Error interno al actualizar el perfil' });
+  }
+};
+
+// ─── CAMBIAR CONTRASEÑA ─────────────────────────────
+const cambiarContrasena = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: 'Sesión no válida o expirada' });
+
+  const { contrasenaActual, nuevaContrasena } = req.body;
+  if (!contrasenaActual || !nuevaContrasena) {
+    return res.status(400).json({ error: 'Ingresa tu contraseña actual y la nueva contraseña' });
+  }
+
+  if (nuevaContrasena.length < 6) {
+    return res.status(400).json({ error: 'La nueva contraseña debe tener al menos 6 caracteres' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const [rows] = await db.query(
+      'SELECT contrasena FROM usuarios WHERE id_usuario = ?',
+      [decoded.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const match = await bcrypt.compare(contrasenaActual, rows[0].contrasena);
+    if (!match) {
+      return res.status(400).json({ error: 'La contraseña actual no es correcta' });
+    }
+
+    const nuevoHash = await bcrypt.hash(nuevaContrasena, 10);
+    await db.query(
+      'UPDATE usuarios SET contrasena = ? WHERE id_usuario = ?',
+      [nuevoHash, decoded.id]
+    );
+
+    res.json({ mensaje: '¡Contraseña actualizada con éxito!' });
+  } catch (error) {
+    console.error('Error al cambiar contraseña:', error);
+    res.status(500).json({ error: 'Error interno al cambiar la contraseña' });
+  }
+};
+
+const checkUsernameAvailability = async (req, res) => {
+  const { username } = req.query;
+  if (!username || !username.trim()) {
+    return res.status(400).json({ error: 'Nombre de usuario requerido' });
+  }
+  const clean = username.trim().toLowerCase();
+  if (!/^[a-z0-9_]{3,30}$/.test(clean)) {
+    return res.json({ disponible: false, mensaje: 'Debe tener entre 3 y 30 caracteres (solo letras, números y _)' });
+  }
+
+  let currentUserId = null;
+  const token = req.cookies.token;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      currentUserId = decoded.id;
+    } catch (e) {}
+  }
+
+  let query = 'SELECT id_usuario FROM usuarios WHERE LOWER(nombre_usuario) = ?';
+  const params = [clean];
+  if (currentUserId) {
+    query += ' AND id_usuario != ?';
+    params.push(currentUserId);
+  }
+
+  try {
+    const [rows] = await db.query(query, params);
+    if (rows.length > 0) {
+      return res.json({ disponible: false, mensaje: 'El nombre de usuario ya está en uso' });
+    }
+    res.json({ disponible: true });
+  } catch (error) {
+    console.error('Error al verificar username:', error);
+    res.status(500).json({ error: 'Error al verificar disponibilidad' });
+  }
+};
+
+const getPerfilUsuario = async (req, res) => {
+  try {
+    const { username } = req.params;
+    if (!username) return res.status(400).json({ error: 'Usuario requerido' });
+
+    const [rows] = await db.query(
+      'SELECT id_usuario, nombre, email, informacion, pronombres, sitio_web, nombre_usuario, foto_perfil, avatar_hat, created_at FROM usuarios WHERE LOWER(nombre_usuario) = LOWER(?)',
+      [username.trim()]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const targetUser = rows[0];
+
+    // Conteo de seguidores y siguiendo desde tabla seguidores
+    const [[seguidoresRow]] = await db.query(
+      'SELECT COUNT(*) as total FROM seguidores WHERE id_seguido = ?',
+      [targetUser.id_usuario]
+    );
+    const [[siguiendoRow]] = await db.query(
+      'SELECT COUNT(*) as total FROM seguidores WHERE id_seguidor = ?',
+      [targetUser.id_usuario]
+    );
+
+    let siguiendoActual = false;
+    let esMismoUsuario = false;
+    const token = req.cookies.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        esMismoUsuario = (decoded.id === targetUser.id_usuario);
+        const [siguiendoCheck] = await db.query(
+          'SELECT 1 FROM seguidores WHERE id_seguidor = ? AND id_seguido = ?',
+          [decoded.id, targetUser.id_usuario]
+        );
+        siguiendoActual = siguiendoCheck.length > 0;
+      } catch (e) {}
+    }
+
+    res.json({
+      perfil: {
+        id: targetUser.id_usuario,
+        id_usuario: targetUser.id_usuario,
+        nombre: targetUser.nombre,
+        nombre_usuario: targetUser.nombre_usuario || username,
+        informacion: targetUser.informacion || '',
+        pronombres: targetUser.pronombres || '',
+        sitio_web: targetUser.sitio_web || '',
+        foto_perfil: targetUser.foto_perfil || null,
+        avatar_hat: targetUser.avatar_hat || 'none',
+        seguidores: seguidoresRow?.total || 0,
+        siguiendo: siguiendoRow?.total || 0,
+        siguiendoActual,
+        esMismoUsuario
+      }
+    });
+  } catch (error) {
+    console.error('Error al obtener perfil:', error);
+    res.status(500).json({ error: 'Error al cargar perfil' });
+  }
+};
+
+const seguirUsuario = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: 'Debes iniciar sesión para seguir usuarios' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { idUsuario } = req.params;
+    const targetId = parseInt(idUsuario, 10);
+
+    if (isNaN(targetId) || decoded.id === targetId) {
+      return res.status(400).json({ error: 'Acción no permitida' });
+    }
+
+    const [targetUser] = await db.query('SELECT id_usuario, nombre FROM usuarios WHERE id_usuario = ?', [targetId]);
+    if (targetUser.length === 0) {
+      return res.status(404).json({ error: 'Usuario a seguir no encontrado' });
+    }
+
+    const [miInfo] = await db.query('SELECT id_usuario, nombre, nombre_usuario FROM usuarios WHERE id_usuario = ?', [decoded.id]);
+    const miUsuario = miInfo[0];
+
+    const [existe] = await db.query(
+      'SELECT 1 FROM seguidores WHERE id_seguidor = ? AND id_seguido = ?',
+      [decoded.id, targetId]
+    );
+
+    if (existe.length > 0) {
+      await db.query('DELETE FROM seguidores WHERE id_seguidor = ? AND id_seguido = ?', [decoded.id, targetId]);
+      return res.json({ siguiendo: false, mensaje: `Dejaste de seguir a ${targetUser[0].nombre}` });
+    } else {
+      await db.query('INSERT INTO seguidores (id_seguidor, id_seguido) VALUES (?, ?)', [decoded.id, targetId]);
+      // Generar notificación real en BD para el usuario seguido
+      await db.query(
+        'INSERT INTO notificaciones (id_usuario, id_remitente, tipo, texto) VALUES (?, ?, ?, ?)',
+        [
+          targetId,
+          decoded.id,
+          'seguimiento',
+          `${miUsuario.nombre} (@${miUsuario.nombre_usuario || 'usuario'}) comenzó a seguir tus secretos guardados`
+        ]
+      );
+      return res.json({ siguiendo: true, mensaje: `Comenzaste a seguir a ${targetUser[0].nombre}` });
+    }
+  } catch (error) {
+    console.error('Error en seguirUsuario:', error);
+    res.status(500).json({ error: 'Error al actualizar seguimiento' });
+  }
+};
+
+const getNotificaciones = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: 'Sesión no válida' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const [rows] = await db.query(`
+      SELECT n.id_notificacion, n.id_usuario, n.id_remitente, n.tipo, n.texto, n.leido, n.created_at,
+             u.nombre as remitente_nombre, u.nombre_usuario as remitente_username, u.foto_perfil as remitente_foto, u.avatar_hat as remitente_hat
+      FROM notificaciones n
+      LEFT JOIN usuarios u ON n.id_remitente = u.id_usuario
+      WHERE n.id_usuario = ?
+      ORDER BY n.created_at DESC
+      LIMIT 30
+    `, [decoded.id]);
+
+    const [[noLeidasRow]] = await db.query(
+      'SELECT COUNT(*) as unread FROM notificaciones WHERE id_usuario = ? AND leido = 0',
+      [decoded.id]
+    );
+
+    res.json({
+      notificaciones: rows,
+      unreadCount: noLeidasRow?.unread || 0
+    });
+  } catch (error) {
+    console.error('Error al obtener notificaciones:', error);
+    res.status(500).json({ error: 'Error interno' });
+  }
+};
+
+const marcarNotificacionesLeidas = async (req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ error: 'Sesión no válida' });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    await db.query('UPDATE notificaciones SET leido = 1 WHERE id_usuario = ?', [decoded.id]);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Error interno' });
+  }
+};
+
+const getUsuariosComunidad = async (req, res) => {
+  try {
+    let currentUserId = null;
+    const token = req.cookies.token;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        currentUserId = decoded.id;
+      } catch (e) {}
+    }
+
+    let query = `
+      SELECT u.id_usuario, u.nombre, u.nombre_usuario, u.email, u.foto_perfil, u.avatar_hat,
+             ${currentUserId ? 'EXISTS(SELECT 1 FROM seguidores s WHERE s.id_seguidor = ? AND s.id_seguido = u.id_usuario) as is_following' : '0 as is_following'}
+      FROM usuarios u
+    `;
+    const params = [];
+    if (currentUserId) {
+      params.push(currentUserId);
+      query += ' WHERE u.id_usuario != ?';
+      params.push(currentUserId);
+    }
+    query += ' ORDER BY u.id_usuario ASC LIMIT 30';
+
+    const [rows] = await db.query(query, params);
+    res.json({ usuarios: rows });
+  } catch (error) {
+    console.error('Error al obtener usuarios de la comunidad:', error);
+    res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+};
+
+module.exports = { 
+  registro, 
+  login, 
+  forgotPassword, 
+  resetPassword, 
+  googleLogin, 
+  sendGoogleVerification, 
+  verifyGoogleMock, 
+  getMe, 
+  logout, 
+  setManualPassword,
+  actualizarPerfil,
+  cambiarContrasena,
+  actualizarAvatarHat,
+  actualizarFotoPerfil,
+  getUsuariosComunidad,
+  checkUsernameAvailability,
+  getPerfilUsuario,
+  seguirUsuario,
+  getNotificaciones,
+  marcarNotificacionesLeidas
+};

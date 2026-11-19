@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS productos (
 DELETE FROM productos;
 
 INSERT INTO productos (nombre, precio, categoria, nivel_juego, imagen, descripcion) VALUES
-('Vibrador Cowgirl', 85000, 'vibradores', 3, '/images/vibrador_cowgirl.png', 'Vibrador ergonómico para aventuras espaciales.'),
+('Cerdito Travieso', 85000, 'vibradores', 3, '/images/cerdito_travieso.png', 'Estimulador de Clítoris con Lengua Vibradora Cerdito Travieso.'),
 ('Lencería de Andy', 120000, 'lencerias', 1, '/images/lenceria_andy.png', 'Conjunto seductor para momentos vaqueros.'),
 ('Plug Anal Sheriff', 45000, 'anales', 4, '/images/plug_anal.png', 'Exploración profunda con la seguridad del sheriff.'),
 ('Caja Misteriosa Al', 250000, 'kits', 5, '/images/mystery_box.png', 'Un kit completo para los coleccionistas más audaces.'),

@@ -14,18 +14,23 @@ import Guia from "./pages/Guia";
 import Explora from "./pages/Explora";
 import Configuracion from "./pages/Configuracion";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminInventory from "./pages/AdminInventory";
 import Vestier from "./pages/Vestier";
+import Carrito from "./pages/Carrito";
+import PerfilPublico from "./pages/PerfilPublico";
 import "./SpaceTheme.css";
 
 function RutaProtegida({ children }) {
-  const { usuario, cargandoSesion } = useContext(AuthContext);
+  const { usuario, cargandoSesion, isLoggedInHint } = useContext(AuthContext);
 
+  // Si está validando en segundo plano pero hay sesión o hint previo, renderizar directamente
+  if (cargandoSesion && (usuario || isLoggedInHint)) {
+    return children;
+  }
+
+  // Mientras termina la primera comprobación sin sesión previa, no mostrar pantalla azul invasiva
   if (cargandoSesion) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-sky-300 text-white font-bold text-2xl animate-pulse">
-        🧸 Cargando la magia de Toy Store...
-      </div>
-    );
+    return null;
   }
 
   return usuario ? children : <Navigate to="/login" />;
@@ -45,12 +50,19 @@ export default function App() {
           <Route path="/google-auth-mock" element={<GoogleAuthMock />} />
           <Route path="/google-login-mock" element={<GoogleLoginMock />} />
           <Route path="/tienda" element={<Tienda />} />
+          <Route path="/carrito" element={<Carrito />} />
+          <Route path="/factura" element={<Carrito />} />
+          <Route path="/pago" element={<Carrito />} />
           <Route path="/contacto" element={<Contacto />} />
           <Route path="/guia" element={<Guia />} />
           <Route path="/explora" element={<Explora />} />
           <Route path="/vestier" element={<Vestier />} />
+          <Route path="/perfil/:username" element={<PerfilPublico />} />
+          <Route path="/u/:username" element={<PerfilPublico />} />
+          <Route path="/usuario/:username" element={<PerfilPublico />} />
           <Route path="/configuracion" element={<RutaProtegida><Configuracion /></RutaProtegida>} />
           <Route path="/admin" element={<RutaProtegida><AdminDashboard /></RutaProtegida>} />
+          <Route path="/admin/productos" element={<RutaProtegida><AdminInventory /></RutaProtegida>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

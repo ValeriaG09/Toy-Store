@@ -17,3 +17,5 @@ const verifyToken = (req, res, next) => {
     res.status(403).json({ error: 'Token inválido o expirado.' });
   }
 };
+
+module.exports = verifyToken;

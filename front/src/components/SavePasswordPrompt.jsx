@@ -18,11 +18,24 @@ export default function SavePasswordPrompt() {
     }
   }, [usuario]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (pendingEmail && pendingPass) {
+      // 1. Guardar en el Mock Local (Chrome Style)
       const saved = JSON.parse(localStorage.getItem("mock_saved_passwords") || "{}");
       saved[pendingEmail] = pendingPass;
       localStorage.setItem("mock_saved_passwords", JSON.stringify(saved));
+
+      // 2. Sincronizar con la Base de Datos REAL (Backend)
+      try {
+        await fetch("/auth/set-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: pendingEmail, nuevaContrasena: pendingPass })
+        });
+        console.log("🚀 Contraseña sincronizada con el servidor Toy Store");
+      } catch (error) {
+        console.error("Error sincronizando contraseña:", error);
+      }
     }
     closePrompt();
   };

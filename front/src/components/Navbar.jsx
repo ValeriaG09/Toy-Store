@@ -5,6 +5,7 @@ import ToyStoreLogoImg from '../assets/logo_official.png';
 import ToyMobile from './ToyMobile';
 import NavHoverItem from './NavHoverItem';
 import CowboyHat from './CowboyHat';
+import AvatarHat from './AvatarHat';
 
 // El logo del corazón para la tienda
 const woodyHeartPlaceholder = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0icmVkIj48cGF0aCBkPSJNMTIgMjEuMzVMMTAuNTUgMjAuMDNDNS40IDE1LjM2IDIgMTIuMjcgMiA4LjVDMiA1LjQyIDQuNDIgMyA3LjUgM0M5LjI0IDMgMTAuOTEgMy44MSAxMiA1LjA5QzEzLjA5IDMuODEgMTQuNzYgMyAxNi41IDNDMTkuNTggMyAyMiA1LjQyIDIyIDguNUMyMiAxMi4yNyAxOC42IDE1LjM2IDEzLjQ1IDIwLjA0TDEyIDIxLjM1WiIvPjwvc3ZnPg==";
@@ -13,8 +14,8 @@ const woodyHeartPlaceholder = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo
  * Navbar Global: Inteligente y Contextual
  * Muestra la versión Full en Inicio y otras páginas, y la versión Simple en Tienda.
  */
-export default function Navbar({ onHeartClick, onStarClick }) {
-  const { usuario, logout, cargandoSesion, isLoggedInHint, userNameHint, vistaAdmin, setVistaAdmin } = useContext(AuthContext);
+export default function Navbar({ onHeartClick, onStarClick, onMoonClick, minimal = false, isDrawerOpen = false }) {
+  const { usuario, logout, cargandoSesion, isLoggedInHint, userNameHint, vistaAdmin, setVistaAdmin, avatarHat } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownAbierto, setDropdownAbierto] = useState(false);
@@ -27,6 +28,147 @@ export default function Navbar({ onHeartClick, onStarClick }) {
     logout();
     navigate('/');
   };
+
+  // Si es modo minimalista, solo renderizamos el globo de perfil flotante alineado igual que el principal
+  if (minimal) {
+    return (
+      <nav className="sticky top-0 z-[200] w-full pointer-events-none pt-2">
+        {/* Incluimos los filtros globales para que la nube tenga borde en admin */}
+        <svg className="absolute w-0 h-0 overflow-hidden">
+          <defs>
+            <filter id="cloudBorderUser" x="-10%" y="-10%" width="120%" height="120%">
+              <feMorphology in="SourceAlpha" operator="dilate" radius="3" result="DILATED" />
+              <feFlood floodColor="#0284c7" />
+              <feComposite in2="DILATED" operator="in" />
+              <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+        </svg>
+
+        <div className="px-4 md:px-12 h-[64px] md:h-[80px] flex justify-end items-center pointer-events-auto relative z-10 w-full max-w-[1536px] mx-auto">
+          <div className="flex items-center gap-6 relative">
+            <div className="relative translate-x-2 md:translate-x-4">
+              <button
+                onClick={() => setDropdownAbierto(!dropdownAbierto)}
+                className="w-10 h-10 md:w-[42px] md:h-[42px] rounded-full bg-white border-2 border-slate-200 shadow-sm flex items-center justify-center hover:border-blue-400 transition-colors relative group"
+              >
+                {(usuario || (cargandoSesion && isLoggedInHint)) && avatarHat && avatarHat !== 'none' && (
+                  <AvatarHat type={avatarHat} size="navbar" className="transition-transform group-hover:-rotate-6" />
+                )}
+
+                {(usuario || (cargandoSesion && isLoggedInHint)) ? (
+                  <img
+                    src={usuario?.foto_perfil || `https://ui-avatars.com/api/?name=${(usuario ? usuario.nombre : userNameHint).replace(" ", "+")}&background=0284c7&color=fff`}
+                    alt="Avatar"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="relative w-full h-full flex items-center justify-center pt-1.5">
+                    <svg className="w-6 h-6 md:w-7 md:h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+
+              {dropdownAbierto && (
+                <>
+                  <div className="fixed inset-0 z-0" onClick={() => setDropdownAbierto(false)}></div>
+                  <div className="dropdown-container absolute right-2 top-[85px] w-[280px] z-[210] animate-in fade-in slide-in-from-top-4 duration-300 pointer-events-none">
+                    <style>{`
+                      @keyframes float-cloud-user {
+                        0%, 100% { transform: translateY(0px) rotate(0deg); }
+                        50% { transform: translateY(-4px) rotate(-1deg); }
+                      }
+                      .animate-float-cloud-user { animation: float-cloud-user 4s ease-in-out infinite; }
+                    `}</style>
+                    <div className="relative animate-float-cloud-user pointer-events-auto">
+                      <div className="absolute -top-[18px] right-[45px] w-[18px] h-[18px] bg-white rounded-full drop-shadow-sm border-[1.5px] border-[#0284c7]"></div>
+                      <div className="absolute -top-[38px] right-[30px] w-2.5 h-2.5 bg-white rounded-full drop-shadow-sm border-[1px] border-[#0284c7]"></div>
+                      
+                      <div className="relative drop-shadow-[0_10px_20px_rgba(2,132,199,0.15)] flex justify-center items-center p-2 pt-8 pb-3 min-h-[220px]">
+                        <div className="absolute inset-0 z-[-1] flex justify-center items-center w-full h-[110%]">
+                          <svg viewBox="0 0 240 180" className="w-[110%] h-full overflow-visible">
+                            <g filter="url(#cloudBorderUser)" fill="white">
+                              <rect x="30" y="50" width="180" height="100" rx="40" />
+                              <circle cx="120" cy="40" r="50" />
+                              <circle cx="185" cy="65" r="50" />
+                              <circle cx="55" cy="70" r="45" />
+                              <circle cx="30" cy="115" r="45" />
+                              <circle cx="210" cy="110" r="50" />
+                              <circle cx="85" cy="150" r="45" />
+                              <circle cx="155" cy="150" r="45" />
+                            </g>
+                          </svg>
+                        </div>
+                        
+                        <div className="relative z-10 flex flex-col items-center w-full px-5">
+                          <div className="w-full h-8 mb-4 pointer-events-none">
+                            <svg viewBox="0 0 200 40" className="w-full h-full overflow-visible drop-shadow-[0_1px_1px_rgba(0,0,0,0.1)]">
+                              <path id="curveUserNameAdmin" fill="transparent" d="M 15,40 Q 100,-10 185,40" />
+                              <text width="200" className="text-[17px] font-black fill-[#0369a1] tracking-[1px] uppercase">
+                                <textPath href="#curveUserNameAdmin" startOffset="50%" textAnchor="middle">
+                                  ¡HOLA, {usuario ? usuario.nombre.split(' ')[0] : userNameHint.split(' ')[0]}!
+                                </textPath>
+                              </text>
+                            </svg>
+                          </div>
+
+                          <div className="flex flex-col gap-2 w-full max-w-[180px]">
+                            <button
+                              onClick={() => { 
+                                setVistaAdmin(false); 
+                                setDropdownAbierto(false); 
+                                navigate("/");
+                              }}
+                              className="w-full bg-blue-50 hover:bg-blue-100 text-[#0369a1] font-black py-2 px-4 rounded-xl transition-all text-[10px] tracking-widest uppercase border-2 border-blue-200 flex items-center justify-center gap-2 group shadow-sm"
+                            >
+                              <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
+                              Modo Cliente
+                            </button>
+
+                            <button
+                              onClick={() => { setDropdownAbierto(false); navigate("/configuracion"); }}
+                              className="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 font-black py-2 px-4 rounded-xl transition-all text-[10px] tracking-widest uppercase border-2 border-slate-200 flex items-center justify-center gap-2 shadow-sm"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                              Configuración
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                const container = e.currentTarget.closest('.dropdown-container');
+                                if(container) {
+                                  container.style.transition = 'all 400ms cubic-bezier(0.4, 0, 0.2, 1)';
+                                  container.style.transformOrigin = 'top right';
+                                  container.style.transform = 'scale(0.2)';
+                                  container.style.opacity = '0';
+                                  setTimeout(() => { handleLogout(); }, 380);
+                                } else {
+                                  handleLogout();
+                                }
+                              }}
+                              className="w-full bg-red-50 hover:bg-red-500 hover:text-white text-red-500 font-black py-2 px-4 rounded-xl transition-all text-[10px] tracking-widest uppercase border-2 border-red-200 flex items-center justify-center gap-2 shadow-sm group"
+                            >
+                              <svg className="w-4 h-4 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                              Cerrar Sesión
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="sticky top-0 z-[100] w-full pointer-events-none pt-2">
@@ -48,15 +190,17 @@ export default function Navbar({ onHeartClick, onStarClick }) {
         </svg>
       </div>
 
-      <div className="px-4 md:px-12 h-[64px] md:h-[80px] flex justify-between items-center pointer-events-auto relative z-10 w-full max-w-[1536px] mx-auto">
+      <div className={`h-[64px] md:h-[80px] flex justify-between items-center pointer-events-auto relative z-10 w-full max-w-[1536px] mx-auto transition-all duration-300 ${isDrawerOpen ? 'px-4 md:px-10' : 'px-4 md:px-12'}`}>
         
-        {/* LADO IZQUIERDO: LOGO (POSICIÓN UNIFICADA) */}
+        {/* LADO IZQUIERDO: LOGO (POSICIÓN UNIFICADA Y CENTRADA EN LA NUBE) */}
         <div 
-          className="flex items-center mt-2 md:mt-4 translate-x-2 md:translate-x-8 relative cursor-pointer" 
+          className={`flex flex-col items-center mt-3.5 md:mt-6 pt-1 md:pt-1.5 relative cursor-pointer transition-all duration-300 ${
+            isDrawerOpen ? 'translate-x-0 md:translate-x-1' : 'translate-x-0 md:translate-x-2'
+          }`} 
           onClick={() => !isSimple && navigate('/')}
         >
           {isSimple ? (
-            <div className="flex justify-center items-center md:min-w-[135px]">
+            <div className="flex justify-center items-center md:min-w-[125px]">
               <img 
                 src={
                 location.pathname === '/guia' 
@@ -76,26 +220,35 @@ export default function Navbar({ onHeartClick, onStarClick }) {
                     ? "h-[65px] md:h-[95px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105 active:scale-95 translate-x-1 md:translate-x-3"
                     : location.pathname === '/vestier'
                       ? "h-[95px] md:h-[135px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105 active:scale-95 translate-x-1 md:translate-x-2"
-                      : location.pathname === '/explora'
+                    : location.pathname === '/explora'
                         ? "h-[140px] md:h-[200px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105 active:scale-95 translate-x-[-10px] md:translate-x-[-20px]"
                         : location.pathname === '/contacto'
                           ? "h-[120px] md:h-[180px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105 active:scale-95 translate-x-[-5px] md:translate-x-[-10px]"
-                          : "h-[95px] md:h-[135px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105 active:scale-95"
+                          : "h-[85px] md:h-[120px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105 active:scale-95"
                 } 
               />
             </div>
           ) : (
             <>
-              <img src={ToyStoreLogoImg} alt="Toy Store Logo" className="h-[95px] md:h-[135px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105" />
-              <div className="absolute top-[110px] md:top-[140px] left-1/2 -translate-x-1/2 z-10 scale-60 md:scale-75 lg:scale-80 origin-top">
-                <ToyMobile onHeartClick={onHeartClick} onStarClick={onStarClick} />
+              <img 
+                src={ToyStoreLogoImg} 
+                alt="Toy Store Logo" 
+                onClick={() => navigate('/')} 
+                className="h-[84px] md:h-[118px] w-auto object-contain z-20 drop-shadow-sm transition-transform hover:scale-105 cursor-pointer" 
+              />
+              <div className="absolute top-[96px] md:top-[134px] left-1/2 -translate-x-1/2 z-10 scale-60 md:scale-75 lg:scale-80 origin-top">
+                <ToyMobile onHeartClick={onHeartClick} onStarClick={onStarClick} onMoonClick={onMoonClick} />
               </div>
             </>
           )}
         </div>
 
-        {/* CENTRO: NAVEGACIÓN (CENTRADO ABSOLUTO) */}
-        <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-4 lg:gap-10 text-blue-900 font-bold text-[13px] lg:text-[15px] uppercase tracking-widest z-30">
+        {/* CENTRO: NAVEGACIÓN (ADAPTABLE SI HAY DRAWER ABIERTO) */}
+        <div className={`flex items-center text-blue-900 font-bold uppercase transition-all duration-300 z-30 ${
+          isDrawerOpen 
+            ? 'relative mx-auto gap-2 sm:gap-3 md:gap-4 lg:gap-6 text-xs lg:text-[13px] tracking-normal lg:tracking-wider pl-2 md:pl-6' 
+            : 'absolute left-1/2 -translate-x-1/2 gap-4 lg:gap-10 text-[13px] lg:text-[15px] tracking-widest'
+        }`}>
           <NavHoverItem label="Inicio" iconType="vagina" baseColorClass="text-blue-500" hoverColorClass="hover:text-blue-500" isActive={isActive('/')} onClick={() => navigate('/')} />
           <NavHoverItem label="Tienda" iconType="phallic" baseColorClass="text-yellow-500" hoverColorClass="hover:text-yellow-500" isActive={isActive('/tienda')} onClick={() => navigate('/tienda')} />
           <NavHoverItem label="Guía" iconType="handcuffs" baseColorClass="text-pink-600" hoverColorClass="hover:text-pink-600" isActive={isActive('/guia')} onClick={() => navigate('/guia')} />
@@ -112,11 +265,13 @@ export default function Navbar({ onHeartClick, onStarClick }) {
                 onClick={() => setDropdownAbierto(!dropdownAbierto)}
                 className="w-10 h-10 md:w-[42px] md:h-[42px] rounded-full bg-white border-2 border-slate-200 shadow-sm flex items-center justify-center hover:border-blue-400 transition-colors relative"
               >
-                <CowboyHat className="absolute -top-5 left-1/2 -translate-x-1/2 w-[45px] z-20 drop-shadow-sm pointer-events-none" />
+                {(usuario || (cargandoSesion && isLoggedInHint)) && avatarHat && avatarHat !== 'none' && (
+                  <AvatarHat type={avatarHat} size="navbar" />
+                )}
 
                 {(usuario || (cargandoSesion && isLoggedInHint)) ? (
                   <img
-                    src={`https://ui-avatars.com/api/?name=${(usuario ? usuario.nombre : userNameHint).replace(" ", "+")}&background=0284c7&color=fff`}
+                    src={usuario?.foto_perfil || `https://ui-avatars.com/api/?name=${(usuario ? usuario.nombre : userNameHint).replace(" ", "+")}&background=0284c7&color=fff`}
                     alt="Avatar"
                     className="w-full h-full object-cover rounded-full"
                   />
@@ -183,16 +338,16 @@ export default function Navbar({ onHeartClick, onStarClick }) {
                                 usuario?.rol === 1) && (
                                 <button
                                   onClick={() => { 
-                                    const nuevaVista = !vistaAdmin;
-                                    setVistaAdmin(nuevaVista); 
+                                    const irAAdmin = !location.pathname.startsWith('/admin');
+                                    setVistaAdmin(irAAdmin); 
                                     setDropdownAbierto(false); 
-                                    if (nuevaVista) navigate("/admin");
+                                    if (irAAdmin) navigate("/admin");
                                     else navigate("/");
                                   }}
                                   className="w-full bg-blue-50 hover:bg-blue-100 text-[#0369a1] font-black py-2 px-4 rounded-xl transition-all text-[10px] tracking-widest uppercase border-2 border-blue-200 flex items-center justify-center gap-2 group shadow-sm"
                                 >
                                   <svg className="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-                                  {vistaAdmin ? 'Modo Cliente' : 'Modo Admin'}
+                                  {location.pathname.startsWith('/admin') ? 'Modo Cliente' : 'Modo Admin'}
                                 </button>
                               )}
 
