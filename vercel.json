@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm --prefix front run build",
+  "outputDirectory": "front/dist",
+  "installCommand": "npm --prefix front install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
