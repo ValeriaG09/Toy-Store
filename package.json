@@ -23,7 +23,7 @@
   "main": "index.js",
   "scripts": {
     "start": "concurrently \"npm run dev --prefix back\" \"npm run dev --prefix front\"",
-    "build": "npm --prefix front run build",
+    "build": "cd front && npm install && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

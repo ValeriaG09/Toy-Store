@@ -1,7 +1,6 @@
 {
-  "buildCommand": "npm --prefix front run build",
+  "buildCommand": "cd front && npm install && npm run build",
   "outputDirectory": "front/dist",
-  "installCommand": "npm --prefix front install",
   "framework": "vite",
   "rewrites": [
     {
